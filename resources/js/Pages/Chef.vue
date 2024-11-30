@@ -1,4 +1,5 @@
 <template>
+      <Head title="Chef Management" />
     <AuthenticatedLayout>
     <div class="min-h-screen bg-gray-50">
       <!-- Header -->

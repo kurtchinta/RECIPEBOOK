@@ -43,6 +43,12 @@ const showingNavigationDropdown = ref(false);
                                     :href="route('chef')"
                                     :active="route().current('chef')"
                                 >
+                                    Admin Dashboard
+                                </NavLink>
+                                <NavLink
+                                    :href="route('chef')"
+                                    :active="route().current('chef')"
+                                >
                                     Chef Dashboard
                                 </NavLink>
                                 
