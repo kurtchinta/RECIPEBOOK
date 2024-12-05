@@ -18,9 +18,9 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->foreignId('role_id')->constrained('roles','id')->onDelete('cascade');
             $table->rememberToken();
             $table->timestamps();
+            $table->foreignId('role_id')->constrained('roles','id')->onDelete('cascade');
         });
 
         // Create password_reset_tokens table

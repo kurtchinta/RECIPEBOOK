@@ -13,15 +13,16 @@ return new class extends Migration
     {
         Schema::create('recipes', function (Blueprint $table) {
             $table->id();  // Auto-incrementing ID column
-            $table->string('title');  // Title of the recipe
-            $table->text('ingredients');  // Ingredients of the recipe
-            $table->foreignId('category_id')->constrained('categories')->onDelete('cascade');  // Foreign key referencing the 'categories' table
-            $table->string('image_url')->nullable();  // URL or path to the recipe image (nullable)
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');  // Foreign key referencing the 'users' table (chef who created the recipe)
+            $table->string('recipe_name');  // Title of the recipe
+            $table->text('url_image');
+            $table->text('prep_time');
+            $table->text('description');  
+            $table->text('ingredients'); 
+            $table->text('procedures');  
+            $table->foreignId('category_id')->constrained('categories')->onDelete('cascade');
             $table->timestamps();  // 'created_at' and 'updated_at' columns
         });
     }
-
     /**
      * Reverse the migrations.
      */

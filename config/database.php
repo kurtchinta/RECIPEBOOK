@@ -46,7 +46,7 @@ return [
             'sslmode' => 'prefer',
         ],
 
-        'pgsql' => [
+        'pgsql_admin' => [
             'driver' => 'pgsql',
             'url' => env('DB_URL'),
             'host' => env('DB_HOST', '127.0.0.1'),
@@ -61,7 +61,7 @@ return [
             'sslmode' => 'prefer',
         ],
 
-        'pgsql' => [
+        'pgsql_chef' => [
             'driver' => 'pgsql',
             'url' => env('DB_URL'),
             'host' => env('DB_HOST', '127.0.0.1'),
@@ -76,7 +76,7 @@ return [
             'sslmode' => 'prefer',
         ],
 
-        'pgsql' => [
+        'pgsql_viewer' => [
             'driver' => 'pgsql',
             'url' => env('DB_URL'),
             'host' => env('DB_HOST', '127.0.0.1'),

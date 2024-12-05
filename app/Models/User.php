@@ -11,6 +11,13 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /**
+     * The primary key associated with the table.
+     *
+     * @var string
+     */
+    protected $primaryKey = 'id';
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
@@ -19,7 +26,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role_id', 
+        'role_id',
     ];
 
     /**
@@ -33,15 +40,43 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * The attributes that should be cast.
      *
-     * @return array<string, string>
+     * @var array<string, string>
      */
-    protected function casts(): array
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
+
+    /**
+     * Define the relationship to the Role model.
+     */
+    public function role()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->belongsTo(roles::class, 'role_id');
+    }
+
+    /**
+     * Define the relationship to the Category model.
+     */
+    public function categories()
+    {
+        return $this->hasMany(Category::class, 'user_id');
+    }
+
+    /**
+     * Define the relationship to the Recipe model through the Category model.
+     */
+    public function recipes()
+    {
+        return $this->hasManyThrough(
+            Recipe::class,
+            Category::class,
+            'user_id', // Foreign key on categories table
+            'category_id', // Foreign key on recipes table
+            'id', // Local key on users table
+            'id' // Local key on categories table
+        );
     }
 }

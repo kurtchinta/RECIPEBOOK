@@ -30,28 +30,47 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        // Validate the incoming registration data
+        // Validate the registration data
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:users,email', 
+            'email' => 'required|string|email|max:255|unique:users,email',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        // Create a new user
+        // Default role ID (e.g., 3 = Viewer/User in your system)
+        $defaultRoleId = 3;
+
+        // Create the new user
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role_id' => 1
+            'role_id' => $defaultRoleId,
         ]);
 
         // Trigger Registered event
         event(new Registered($user));
 
-        // Log the user in after registration
+        // Log the user in
         Auth::login($user);
 
-        // Redirect to the dashboard
-        return redirect()->route('dashboard'); // Ensure 'dashboard' route exists
+        // Redirect based on role
+        return $this->redirectToDashboard($user);
+    }
+
+    /**
+     * Redirect to the appropriate dashboard based on user role.
+     */
+    private function redirectToDashboard(User $user): RedirectResponse
+    {
+        switch ($user->role_id) {
+            case 1: // Admin
+                return redirect()->route('admin');
+            case 2: // Chef
+                return redirect()->route('chef');
+            case 3: // Viewer/User
+            default:
+                return redirect()->route('user');
+        }
     }
 }

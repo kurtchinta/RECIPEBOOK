@@ -13,12 +13,11 @@ return new class extends Migration
     {
         Schema::create('categories', function (Blueprint $table) {
             $table->id();  // Creates an auto-incrementing id column
-            $table->string('name');  // Name of the category
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade'); // Foreign key referencing the users table
+            $table->string('category_name');  // Name of the category
             $table->timestamps();  // Creates 'created_at' and 'updated_at' columns
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
         });
     }
-
     /**
      * Reverse the migrations.
      */

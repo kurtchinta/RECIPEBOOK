@@ -33,23 +33,23 @@ const showingNavigationDropdown = ref(false);
                             <div
                                 class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex"
                             >
-                                <NavLink
+                                <NavLink v-if="$page.props.auth.user.role_id === 1 || $page.props.auth.user.role_id === 2 || $page.props.auth.user.role_id === 3" 
                                     :href="route('dashboard')"
                                     :active="route().current('dashboard')"
                                 >
-                                    Dashboard
+                                    Recipe Book
                                 </NavLink>
-                                <NavLink
-                                    :href="route('chef')"
-                                    :active="route().current('chef')"
-                                >
-                                    Admin Dashboard
+                               <NavLink v-if="$page.props.auth.user.role_id === 1" :href="route('admin')"
+                                    :active="route().current('admin')">
+                                    Recipe Book Management
                                 </NavLink>
-                                <NavLink
-                                    :href="route('chef')"
-                                    :active="route().current('chef')"
-                                >
+                                <NavLink v-if="$page.props.auth.user.role_id === 2" :href="route('chef')"
+                                    :active="route().current('chef')">
                                     Chef Dashboard
+                                </NavLink>
+                                <NavLink v-if="$page.props.auth.user.role_id === 3 || $page.props.auth.user.role_id === 1" :href="route('user')"
+                                    :active="route().current('user')">
+                                    Browse Recipes
                                 </NavLink>
                                 
                             </div>
@@ -65,7 +65,11 @@ const showingNavigationDropdown = ref(false);
                                                 type="button"
                                                 class="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
                                             >
-                                                {{ $page.props.auth.user.name }}
+                                            <div class="px-4">
+                                                
+                                                <p class="text-base font-small text-gray-900">{{ $page.props.auth.user.name }}</p>
+                                        </div>
+                                                
 
                                                 <svg
                                                     class="-me-0.5 ms-2 h-4 w-4"
@@ -87,7 +91,7 @@ const showingNavigationDropdown = ref(false);
                                         <DropdownLink
                                             :href="route('profile.edit')"
                                         >
-                                            Profile
+                                            Edit Profile
                                         </DropdownLink>
                                         <DropdownLink
                                             :href="route('logout')"
@@ -153,11 +157,23 @@ const showingNavigationDropdown = ref(false);
                     class="sm:hidden"
                 >
                     <div class="space-y-1 pb-3 pt-2">
-                        <ResponsiveNavLink
-                            :href="route('dashboard')"
-                            :active="route().current('dashboard')"
-                        >
-                            Dashboard
+                        <ResponsiveNavLink v-if="$page.props.auth.user.role_id === 1 || $page.props.auth.user.role_id === 2" 
+                                    :href="route('dashboard')"
+                                    :active="route().current('dashboard')"
+                                >
+                                    Recipe Book
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink v-if="$page.props.auth.user.role_id === 1" :href="route('admin')"
+                                    :active="route().current('admin')">
+                                    Recipe Book Manager
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink v-if="$page.props.auth.user.role_id === 2" :href="route('chef')"
+                                    :active="route().current('chef')">
+                                    Chef Dashboard
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink v-if="$page.props.auth.user.role_id === 3" :href="route('user')"
+                                    :active="route().current('user')">
+                                    Browse Recipes
                         </ResponsiveNavLink>
                     </div>
 
