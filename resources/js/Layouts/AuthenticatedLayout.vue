@@ -47,7 +47,7 @@ const showingNavigationDropdown = ref(false);
                                     :active="route().current('chef')">
                                     Chef Dashboard
                                 </NavLink>
-                                <NavLink v-if="$page.props.auth.user.role_id === 3 || $page.props.auth.user.role_id === 1" :href="route('user')"
+                                <NavLink v-if="$page.props.auth.user.role_id === 3 || $page.props.auth.user.role_id === 1 ||  $page.props.auth.user.role_id === 2" :href="route('user')"
                                     :active="route().current('user')">
                                     Browse Recipes
                                 </NavLink>

@@ -16,13 +16,15 @@ return new class extends Migration
             $table->string('recipe_name');  // Title of the recipe
             $table->text('url_image');
             $table->text('prep_time');
-            $table->text('description');  
-            $table->text('ingredients'); 
-            $table->text('procedures');  
-            $table->foreignId('category_id')->constrained('categories')->onDelete('cascade');
+            $table->text('description');
+            $table->text('ingredients');
+            $table->text('procedures');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');  // Foreign key for user (creator)
+            $table->foreignId('category_id')->constrained('categories')->onDelete('cascade');  // Foreign key for category
             $table->timestamps();  // 'created_at' and 'updated_at' columns
         });
     }
+
     /**
      * Reverse the migrations.
      */

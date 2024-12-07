@@ -7,11 +7,11 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class RecipeController extends Controller
 {
-
     /**
      * Display a listing of the recipes.
      */
@@ -27,30 +27,6 @@ class RecipeController extends Controller
 
         return Inertia::render('Recipes/Index', [
             'recipes' => $recipes,
-            'user' => Auth::user(),
-        ]);
-    }
-
-    /**
-     * Display recent recipes.
-     */
-    public function recent()
-    {
-        $recentRecipes = DB::select('SELECT * FROM recent_recipes');
-        return Inertia::render('Recipes/Index', [
-            'recipes' => $recentRecipes,
-            'user' => Auth::user(),
-        ]);
-    }
-
-    /**
-     * Display a random recipe.
-     */
-    public function random()
-    {
-        $randomRecipe = DB::select('SELECT * FROM random_recipe');
-        return Inertia::render('Recipes/Index', [
-            'recipes' => $randomRecipe,
             'user' => Auth::user(),
         ]);
     }
@@ -73,19 +49,32 @@ class RecipeController extends Controller
     {
         $request->validate([
             'recipe_name' => 'required|string|max:255',
+            'description' => 'required|string',
             'ingredients' => 'required|string',
             'procedures' => 'required|string',
             'category_id' => 'required|exists:categories,id',
+            'preptime' => 'required|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Validation for image
         ]);
 
-        Recipe::create([
+        // Handle the image upload if exists
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('recipe_images', 'public');
+        }
+
+        // Create the recipe record in the database
+        $recipe = Recipe::create([
             'recipe_name' => $request->recipe_name,
+            'description' => $request->description,
             'ingredients' => $request->ingredients,
             'procedures' => $request->procedures,
             'category_id' => $request->category_id,
+            'preptime' => $request->preptime,
+            'image' => $imagePath, // Store the image path in the database
         ]);
 
-        return redirect()->route('recipes.index');
+        return response()->json(['message' => 'Recipe added successfully', 'recipe' => $recipe], 201);
     }
 
     /**
@@ -118,19 +107,37 @@ class RecipeController extends Controller
     {
         $request->validate([
             'recipe_name' => 'required|string|max:255',
+            'description' => 'required|string',
             'ingredients' => 'required|string',
             'procedures' => 'required|string',
             'category_id' => 'required|exists:categories,id',
+            'preptime' => 'required|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
+        // Handle the image upload if exists
+        if ($request->hasFile('image')) {
+            // Delete old image if it exists
+            if ($recipe->image && Storage::exists('public/' . $recipe->image)) {
+                Storage::delete('public/' . $recipe->image);
+            }
+            // Store the new image
+            $imagePath = $request->file('image')->store('recipe_images', 'public');
+            $recipe->image = $imagePath;
+        }
+
+        // Update the recipe record
         $recipe->update([
             'recipe_name' => $request->recipe_name,
+            'description' => $request->description,
             'ingredients' => $request->ingredients,
             'procedures' => $request->procedures,
             'category_id' => $request->category_id,
+            'preptime' => $request->preptime,
+            // 'image' is handled separately above
         ]);
 
-        return redirect()->route('recipes.show', $recipe);
+        return response()->json(['message' => 'Recipe updated successfully', 'recipe' => $recipe], 200);
     }
 
     /**
@@ -138,8 +145,13 @@ class RecipeController extends Controller
      */
     public function destroy(Recipe $recipe)
     {
+        // Delete the recipe's image from storage if it exists
+        if ($recipe->image && Storage::exists('public/' . $recipe->image)) {
+            Storage::delete('public/' . $recipe->image);
+        }
+
         $recipe->delete();
 
-        return redirect()->route('recipes.index');
+        return response()->json(['message' => 'Recipe deleted successfully'], 200);
     }
 }

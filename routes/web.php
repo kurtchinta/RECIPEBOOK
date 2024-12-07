@@ -17,9 +17,6 @@ Route::get('/', function () {
     ]);
 });
 
-
-
-
 // Authenticated routes
 Route::middleware(['auth', 'setDB'])->group(function () {
 
@@ -28,27 +25,16 @@ Route::middleware(['auth', 'setDB'])->group(function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
-   // Admin-specific routes
-Route::middleware('admin')->group(function () {
-    Route::get('/admin', [AdminController::class, 'dashboard'])->name('admin');
-    Route::get('/admin/displays', [AdminController::class, 'display_info'])->name('admin.display');
-    // Route::patch('/admin/users/{user}', [AdminController::class, 'updateUser'])->name('admin.users.update');
-    // Route::delete('/admin/users/{user}', [AdminController::class, 'deleteUser'])->name('admin.users.delete');
-    // Route::get('/admin/refresh-statistics', [AdminController::class, 'refreshStatistics'])->name('admin.refreshStatistics');
-});
+    // Admin-specific routes
+    Route::middleware('admin')->group(function () {
+        // Admin Dashboard route
+        Route::get('/admin', [AdminController::class, 'display_info'])->name('admin');
 
-
-
-
-
-
-
-
-
-
-
-
-
+        // User management routes
+        Route::delete('/admin/users/{user}', [AdminController::class, 'deleteUser'])->name('admin.deleteUser');
+        Route::put('/admin/update-user-role/{user}', [AdminController::class, 'updateUserRole'])->name('admin.updateUserRole');
+        Route::post('/admin/addUser', [AdminController::class, 'addUser'])->name('admin.addUser');
+    });
 
     // Chef-specific routes
     Route::middleware('chef')->group(function () {
@@ -56,17 +42,15 @@ Route::middleware('admin')->group(function () {
             return Inertia::render('Chef');
         })->name('chef');
 
-        Route::resource('recipes', RecipeController::class);
+        Route::resource('recipes', RecipeController::class)->except(['index', 'show']);
+        Route::post('/chef/store', [AdminController::class, 'store'])->name('chef.store');
     });
 
-    // User-specific routes (without custom middleware, just role check in closure)
+    // User-specific routes
     Route::middleware('auth')->group(function () {
         Route::get('/user', function () {
-            return Inertia :: render('User');
+            return Inertia::render('User');
         })->name('user');
-
-        // Route::get('/recipes', [RecipeController::class, 'index'])->name('user.recipes.index');
-        // Route::get('/recipes/{recipe}', [RecipeController::class, 'show'])->name('user.recipes.show');
     });
 
     // Profile routes for all authenticated users
