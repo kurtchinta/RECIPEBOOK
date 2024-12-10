@@ -1,13 +1,12 @@
 <?php
 
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\RecipeController;
+use App\Http\Controllers\ChefController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-// Welcome page
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
@@ -17,43 +16,32 @@ Route::get('/', function () {
     ]);
 });
 
-// Authenticated routes
 Route::middleware(['auth', 'setDB'])->group(function () {
-
-    // General dashboard for all roles
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
-    // Admin-specific routes
+    Route::get('/user', [AdminController::class, 'users'])->name('user');
+
     Route::middleware('admin')->group(function () {
-        // Admin Dashboard route
         Route::get('/admin', [AdminController::class, 'display_info'])->name('admin');
-
-        // User management routes
         Route::delete('/admin/users/{user}', [AdminController::class, 'deleteUser'])->name('admin.deleteUser');
-        Route::put('/admin/update-user-role/{user}', [AdminController::class, 'updateUserRole'])->name('admin.updateUserRole');
-        Route::post('/admin/addUser', [AdminController::class, 'addUser'])->name('admin.addUser');
+        Route::put('/admin/users/{user}/update-role', [AdminController::class, 'updateUserRole'])->name('admin.updateUserRole');
+        Route::post('/admin/users', [AdminController::class, 'addUser'])->name('admin.addUser');
     });
 
-    // Chef-specific routes
     Route::middleware('chef')->group(function () {
-        Route::get('/chef', function () {
-            return Inertia::render('Chef');
-        })->name('chef');
-
-        Route::resource('recipes', RecipeController::class)->except(['index', 'show']);
-        Route::post('/chef/store', [AdminController::class, 'store'])->name('chef.store');
+        Route::get('/chef', [ChefController::class, 'display_info'])->name('chef');
+        Route::get('/chef/dashboard', [ChefController::class, 'dashboard'])->name('chef.dashboard');
+        Route::get('/chef/dashboard/stats', [ChefController::class, 'getDashboardStats'])->name('chef.getDashboardStats');
+        Route::get('/chef/recipes/create', [ChefController::class, 'createRecipe'])->name('chef.createRecipe');
+        Route::post('/chef/recipes', [ChefController::class, 'storeRecipe'])->name('chef.storeRecipe');
+        Route::get('/chef/recipes/{id}/edit', [ChefController::class, 'editRecipe'])->name('chef.editRecipe');
+        Route::put('/chef/recipes/{id}', [ChefController::class, 'updateRecipe'])->name('chef.updateRecipe');
+        Route::delete('/chef/recipes/{id}', [ChefController::class, 'deleteRecipe'])->name('chef.deleteRecipe');
+        Route::post('/chef/categories', [ChefController::class, 'storeCategory'])->name('chef.storeCategory');
     });
 
-    // User-specific routes
-    Route::middleware('auth')->group(function () {
-        Route::get('/user', function () {
-            return Inertia::render('User');
-        })->name('user');
-    });
-
-    // Profile routes for all authenticated users
     Route::prefix('profile')->group(function () {
         Route::get('/', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/', [ProfileController::class, 'update'])->name('profile.update');
@@ -61,5 +49,4 @@ Route::middleware(['auth', 'setDB'])->group(function () {
     });
 });
 
-// Include auth routes
 require __DIR__ . '/auth.php';

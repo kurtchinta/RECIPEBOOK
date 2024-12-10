@@ -44,7 +44,7 @@
             <div class="flex justify-between items-center mb-6">
               <h2 class="text-3xl font-semibold text-gray-800">User Management</h2>
               <button @click="showAddUserModal = true" 
-                      class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-300 flex items-center">
+                      class="bg-blue-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-blue-700 transition-colors duration-300 flex items-center">
                 <PlusIcon class="h-5 w-5 mr-2" />
                 Add User
               </button>
@@ -255,8 +255,8 @@
       </Dialog>
     </TransitionRoot>
 
-    <!-- Add/Edit User Modal -->
-  <TransitionRoot appear :show="showAddUserModal" as="template">
+   <!-- Add/Edit User Modal -->
+<TransitionRoot appear :show="showAddUserModal" as="template">
   <Dialog as="div" @close="closeModal" class="relative z-50">
     <div class="fixed inset-0 overflow-y-auto">
       <div class="flex min-h-full items-center justify-center p-4 text-center">
@@ -303,6 +303,8 @@
                   placeholder="Enter password"
                 />
               </div>
+
+              <!-- Role Selection Dropdown -->
               <div>
                 <label for="role" class="block text-sm font-medium text-gray-700">Role</label>
                 <select
@@ -339,7 +341,6 @@
 </TransitionRoot>
   </AuthenticatedLayout>
 </template>
-
 <script setup>
 import { ref, computed } from "vue";
 import { Head, router } from "@inertiajs/vue3";
@@ -369,7 +370,6 @@ const props = defineProps({
     type: Array,
     default: () => []
   },
-  
   activityLogs: {
     type: Array,
     default: () => []
@@ -380,50 +380,14 @@ const userForm = ref({
   name: '',
   email: '',
   password: '',
-  role_id: ''
+  role_id: null,  // Set to null initially to handle the dynamic value
 });
-
-// Reactive data initialization
-const users = ref([...props.users]);
-const recipes = ref(props.recipes);
-const activityLogs = ref(props.activityLogs);
-const showAddUserModal = ref(false);
-const editingUser = ref(null);
-
-// Confirmation modal
-const showConfirmModal = ref(false);
-const confirmModalConfig = ref({
-  title: '',
-  message: '',
-  onConfirm: null
-});
-
-// Navigation items
-const navItems = [
-  { name: 'Dashboard', href: '#statistics', icon: ChartBarIcon },
-  { name: 'Users', href: '#users', icon: UserGroupIcon },
-  { name: 'Recipes', href: '#recipes', icon: BookOpenIcon },
-  { name: 'Activity', href: '#activity', icon: ClockIcon },
-];
-
-// Computed properties for statistics
-const statistics = computed(() => [
-  { title: "Total Users", value: users.value.length, icon: UserIcon },
-  { title: "Total Recipes", value: recipes.value.length, icon: BookOpenIcon },
-  { title: "Total Chefs", value: users.value.filter((u) => u.role_id === 2).length, icon: UserGroupIcon },
-  { title: "Total Admins", value: users.value.filter((u) => u.role_id === 1).length, icon: ShieldCheckIcon },
-]);
-
-const sortedUsers = computed(() =>
-  users.value.slice().sort((a, b) => a.role_id - b.role_id)
-);
 
 // Methods
 const getRole = (role_id) => {
-  if (role_id === 1) return "Admin";
-  if (role_id === 2) return "Chef";
-  if (role_id === 3) return "User";
-  return "Unknown";
+  // Use the roles array to dynamically get the role name
+  const role = props.roles.find(r => r.id === role_id);
+  return role ? role.role_user : "Unknown";  // Return the role's name, or "Unknown" if not found
 };
 
 const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
@@ -561,7 +525,6 @@ const deleteRecipe = (recipeId) => {
     }
   };
 };
-
 // Fetch and update activity logs
 const refreshActivityLogs = () => {
   router.get(route("admin.getActivityLogs"), {}, {
@@ -588,8 +551,42 @@ const getActivityIcon = (type) => {
       return ClockIcon;
   }
 };
-</script>
 
+// Reactive data initialization
+const users = ref([...props.users]);
+const recipes = ref(props.recipes);
+const activityLogs = ref(props.activityLogs);
+const showAddUserModal = ref(false);
+const editingUser = ref(null);
+
+// Confirmation modal
+const showConfirmModal = ref(false);
+const confirmModalConfig = ref({
+  title: '',
+  message: '',
+  onConfirm: null
+});
+
+// Navigation items
+const navItems = [
+  { name: 'Dashboard', href: '#statistics', icon: ChartBarIcon },
+  { name: 'Users', href: '#users', icon: UserGroupIcon },
+  { name: 'Recipes', href: '#recipes', icon: BookOpenIcon },
+  { name: 'Activity', href: '#activity', icon: ClockIcon },
+];
+
+// Computed properties for statistics
+const statistics = computed(() => [
+  { title: "Total Users", value: users.value.length, icon: UserIcon },
+  { title: "Total Recipes", value: recipes.value.length, icon: BookOpenIcon },
+  { title: "Total Chefs", value: users.value.filter((u) => u.role_id === 2).length, icon: UserGroupIcon },
+  { title: "Total Admins", value: users.value.filter((u) => u.role_id === 1).length, icon: ShieldCheckIcon },
+]);
+
+const sortedUsers = computed(() =>
+  users.value.slice().sort((a, b) => a.role_id - b.role_id)
+);
+</script>
 <style scoped>
 /* Add any additional styles here */
 </style>

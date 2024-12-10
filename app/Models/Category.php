@@ -16,22 +16,13 @@ class Category extends Model
      */
     protected $fillable = [
         'category_name',
-        'user_id',
     ];
 
     /**
-     * Define the relationship to the User model.
-     */
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
-
-    /**
-     * Define the relationship to the Recipe model.
+     * Get the recipes for the category.
      */
     public function recipes()
     {
-        return $this->hasMany(Recipe::class, 'category_id');
+        return $this->hasMany(Recipe::class);
     }
 }

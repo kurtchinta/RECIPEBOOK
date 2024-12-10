@@ -13,13 +13,18 @@ class AdminController extends Controller
     /**
      * Display the dashboard with recipe statistics.
      */
+
     public function dashboard()
     {
         $statistics = DB::select('SELECT * FROM recipe_statistics')[0];
-
         return Inertia::render('Admin', ['statistics' => $statistics]);
     }
-
+    public function users()
+    {
+        $users = User::with('role')->get();
+        $roles = DB::table('roles')->get();
+        return Inertia::render('User', ['users' => $users, 'roles' => $roles]);
+    }
     /**
      * Refresh the materialized view for recipe statistics.
      */
@@ -94,22 +99,24 @@ class AdminController extends Controller
      */
     public function addUser(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8',
-        ]);
+    // Validate the incoming request data, including the dynamic role_id
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:users,email',
+        'password' => 'required|string|min:8',
+        'role_id' => 'required|exists:roles,id',  // Ensure role_id exists in roles table
+    ]);
 
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => bcrypt($validated['password']),
-            'role_id' => 3,
-        ]);
-
-        return back()->with('message', 'User added successfully with a default role of User!');
+    // Create a new user with the provided role_id
+    $user = User::create([
+        'name' => $validated['name'],
+        'email' => $validated['email'],
+        'password' => bcrypt($validated['password']),
+        'role_id' => $validated['role_id'],  // Set role dynamically based on the selected value
+    ]);
+    // Return a success message after user creation
+    return back()->with('message', 'User added successfully with the selected role!');
     }
-
     /**
      * Get the count of recipes created by a specific user.
      */
@@ -127,12 +134,4 @@ class AdminController extends Controller
         $recipes = DB::select('SELECT * FROM get_recent_user_recipes(?, ?)', [$request->user_email, $request->limit]);
         return response()->json(['recipes' => $recipes]);
     }
-
-    /**
-     * Get activity logs.
-     */
-   /**
- * Get activity logs without needing to refresh anything.
- */
-
 }

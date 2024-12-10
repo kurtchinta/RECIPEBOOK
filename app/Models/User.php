@@ -73,7 +73,6 @@ class User extends Authenticatable
         return $this->hasManyThrough(
             Recipe::class,
             Category::class,
-            'user_id', // Foreign key on categories table
             'category_id', // Foreign key on recipes table
             'id', // Local key on users table
             'id' // Local key on categories table

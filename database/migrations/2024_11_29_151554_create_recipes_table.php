@@ -14,11 +14,12 @@ return new class extends Migration
         Schema::create('recipes', function (Blueprint $table) {
             $table->id();  // Auto-incrementing ID column
             $table->string('recipe_name');  // Title of the recipe
-            $table->text('url_image');
-            $table->text('prep_time');
             $table->text('description');
             $table->text('ingredients');
-            $table->text('procedures');
+            $table->text('procedure');
+            $table->text('prep_time');
+            $table->integer('servings');
+            $table->text('url_image');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');  // Foreign key for user (creator)
             $table->foreignId('category_id')->constrained('categories')->onDelete('cascade');  // Foreign key for category
             $table->timestamps();  // 'created_at' and 'updated_at' columns

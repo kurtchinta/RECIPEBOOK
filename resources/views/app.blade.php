@@ -18,4 +18,14 @@
     <body class="font-sans antialiased">
         @inertia
     </body>
+    <script type="module">
+        import { Ziggy } from '@ziggy-js/ziggy';
+    import { ZiggyVue } from 'ziggy-vue';
+    import { createApp } from 'vue';
+    import App from './App.vue';
+    
+    const app = createApp(App);
+    app.use(ZiggyVue, Ziggy);
+    app.mount('#app');
+    </script>
 </html>

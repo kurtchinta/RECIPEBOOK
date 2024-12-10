@@ -6,21 +6,15 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('categories', function (Blueprint $table) {
-            $table->id();  // Creates an auto-incrementing id column
-            $table->string('category_name');  // Name of the category
-            $table->timestamps();  // Creates 'created_at' and 'updated_at' columns
+            $table->id();
+            $table->string('category_name');
+            $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('categories');

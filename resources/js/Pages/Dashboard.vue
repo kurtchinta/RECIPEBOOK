@@ -14,7 +14,7 @@
             </div>
             <div class="flex items-center space-x-4">
               <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                {{ getRole($page.props.auth.user.role_id ) }}
+                {{ getRole($page.props.auth.user.role_id) }}
               </span>
             </div>
           </div>
@@ -25,7 +25,7 @@
       <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="bg-white p-8 rounded-2xl shadow-lg">
           <h2 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-6">Welcome to Your Recipe Book Dashboard!</h2>
-          <p class="text-xl text-gray-600 mb-8">Ready to {{ getWelcomeMessage(getRole($page.props.auth.user.role_id )) }}?</p>
+          <p class="text-xl text-gray-600 mb-8">Ready to {{ getWelcomeMessage(getRole($page.props.auth.user.role_id)) }}?</p>
           
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
             <div v-for="(feature, index) in getRoleFeatures($page.props.auth.user.role_id)" :key="index" 
@@ -110,6 +110,7 @@ const getRole = (role_id) => {
     return "Unknown";
   }
 };
+
 const getWelcomeMessage = (roleId) => {
   const messages = {
     1: "manage the Recipe Book platform", // Admin
@@ -118,7 +119,6 @@ const getWelcomeMessage = (roleId) => {
   };
   return messages[roleId] || "use the Recipe Book platform"; // Default message
 };
-
 
 const getRoleFeatures = (roleId) => {
   const features = {
@@ -141,7 +141,7 @@ const getDashboardRoute = (roleId) => {
   const routes = {
     1: route('admin'),
     2: route('chef'),
-    3: route('user')
+    3: route('user') // Ensure this is the correct route
   };
   return routes[roleId] || route('dashboard');
 };
