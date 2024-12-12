@@ -39,6 +39,21 @@ class ChefController extends Controller
         ]);
     }
 
+    public function store(Request $request)
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'description' => 'required|string',
+        'ingredients' => 'required|array',
+    ]);
+
+    // Save the recipe
+    Recipe::create($validated);
+
+    return back()->with('message', 'Recipe created successfully!');
+}
+
+
     public function createRecipe()
     {
         $categories = Category::all();
@@ -48,7 +63,7 @@ class ChefController extends Controller
 
     public function storeRecipe(Request $request)
     {
-        $validatedData = $request->validate([
+        $validated = $request->validate([
             'recipe_name' => 'required|string|max:255',
             'description' => 'required|string',
             'ingredients' => 'required|string',
@@ -57,6 +72,13 @@ class ChefController extends Controller
             'servings' => 'required|integer|min:1',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'category_id' => 'required|exists:categories,id',
+        ]);
+
+        $recipe = Recipe::create([
+            'name' => $validated['name'],
+            'servings' => $validated['servings'],
+            'category_id' => $validated['category_id'],
+            
         ]);
 
         try {

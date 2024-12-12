@@ -34,7 +34,7 @@ Route::middleware(['auth', 'setDB'])->group(function () {
         Route::get('/chef', [ChefController::class, 'display_info'])->name('chef');
         Route::get('/chef/dashboard', [ChefController::class, 'dashboard'])->name('chef.dashboard');
         Route::get('/chef/dashboard/stats', [ChefController::class, 'getDashboardStats'])->name('chef.getDashboardStats');
-        Route::get('/chef/recipes/create', [ChefController::class, 'createRecipe'])->name('chef.createRecipe');
+        Route::post('/chef/recipes/create', [ChefController::class, 'createRecipe'])->name('chef.createRecipe');
         Route::post('/chef/recipes', [ChefController::class, 'storeRecipe'])->name('chef.storeRecipe');
         Route::get('/chef/recipes/{id}/edit', [ChefController::class, 'editRecipe'])->name('chef.editRecipe');
         Route::put('/chef/recipes/{id}', [ChefController::class, 'updateRecipe'])->name('chef.updateRecipe');

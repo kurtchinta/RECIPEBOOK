@@ -115,25 +115,93 @@
                     {{ editingRecipe ? 'Edit Recipe' : 'Create New Recipe' }}
                   </DialogTitle>
                   <form @submit.prevent="confirmSubmitRecipe" class="space-y-4">
-                    <div v-for="field in recipeFormFields" :key="field.id">
-                      <label :for="field.id" class="block text-sm font-medium text-gray-700">
-                        {{ field.label }}
-                      </label>
-                      <component 
-                        :is="field.component"
-                        v-model="recipeForm[field.id]"
-                        :id="field.id"
-                        v-bind="field.props || {}"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                      >
-                        <template v-if="field.id === 'category_id'">
-                          <option value="">Select a category</option>
-                          <option v-for="category in categories" :key="category.id" :value="category.id">
-                            {{ category.category_name }}
-                          </option>
-                        </template>
-                      </component>
-                    </div>
+                    <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700">Recipe Name</label>
+                    <input
+                      type="text"
+                      id="name"
+                      v-model="recipeForm.recipe_name"
+                      required
+                      :disabled="editingRecipe"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                      placeholder="Enter recipe name"
+                    />
+                  </div>
+                  <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700">Description</label>
+                    <input
+                      type="text"
+                      id="name"
+                      v-model="recipeForm.description"
+                      required
+                      :disabled="editingRecipe"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                      placeholder="Enter recipe description"
+                    />
+                  </div>
+                  <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700">Ingredients</label>
+                    <input
+                      type="text"
+                      id="name"
+                      v-model="recipeForm.ingredients"
+                      required
+                      :disabled="editingRecipe"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                      placeholder="Enter recipe ingredients"
+                    />
+                  </div>
+                  <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700">Procedure</label>
+                    <input
+                      type="text"
+                      id="name"
+                      v-model="recipeForm.procedure"
+                      required
+                      :disabled="editingRecipe"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                      placeholder="Enter recipe procedure"
+                    />
+                  </div>
+                  <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700">Preperation Time</label>
+                    <input
+                      type="text"
+                      id="name"
+                      v-model="recipeForm.prep_time"
+                      required
+                      :disabled="editingRecipe"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                      placeholder="Eg. 30 minutes"
+                    />
+                  </div>
+                  <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700">Servings</label>
+                    <input
+                      type="text"
+                      id="name"
+                      v-model="recipeForm.servings"
+                      required
+                      :disabled="editingRecipe"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                      placeholder="Enter serving size"
+                    />
+                  </div>
+                  <div>
+  <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
+  <select
+    id="category"
+    v-model="recipeForm.category_id"
+    required
+    :disabled="editingRecipe"
+    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+  >
+    <option value="" disabled>Select a category</option>
+    <option v-for="category in categories" :key="category.id" :value="category.id">
+      {{ category.category_name }}
+    </option>
+  </select>
+</div>
                     <div>
                       <label for="image" class="block text-sm font-medium text-gray-700">Recipe Image</label>
                       <input
@@ -313,6 +381,7 @@ const showRecipeModal = ref(false);
 const showConfirmModal = ref(false);
 const editingRecipe = ref(null);
 const selectedRecipe = ref(null);
+
 const recipeForm = ref({
   recipe_name: '',
   description: '',
@@ -426,6 +495,15 @@ const confirmAction = () => {
   closeConfirmModal();
 };
 
+const showAlert = (message, type) => {
+  showConfirmModal.value = true;
+  confirmModalConfig.value = {
+    title: type.charAt(0).toUpperCase() + type.slice(1),
+    message: message,
+    onConfirm: closeConfirmModal
+  };
+};
+
 const confirmDeleteRecipe = (recipeId) => {
   showConfirmModal.value = true;
   confirmModalConfig.value = {
@@ -436,30 +514,28 @@ const confirmDeleteRecipe = (recipeId) => {
 };
 
 const deleteRecipe = (recipeId) => {
-  router.delete(route('chef.deleteRecipe', recipeId), {
-    preserveState: true,
-    preserveScroll: true,
-    onSuccess: () => {
-      recipes.value = recipes.value.filter(recipe => recipe.id !== recipeId);
-      updateDashboardStats();
-      showConfirmModal.value = true;
-      confirmModalConfig.value = {
-        title: 'Success',
-        message: 'Recipe deleted successfully!',
-        onConfirm: closeConfirmModal
-      };
-    },
-    onError: (error) => {
-      console.error("Error deleting recipe:", error);
-      showConfirmModal.value = true;
-      confirmModalConfig.value = {
-        title: 'Error',
-        message: 'Unable to delete the recipe.',
-        onConfirm: closeConfirmModal
-      };
-    },
-  });
+  showConfirmModal.value = true;
+  confirmModalConfig.value = {
+    title: 'Delete Recipe',
+    message: 'Are you sure you want to delete this recipe?',
+    onConfirm: () => {
+      router.delete(route("chef.deleteRecipe", { recipe: recipeId }), {
+        onSuccess: () => {
+          recipes.value = recipes.value.filter((recipe) => recipe.id !== recipeId);
+          showAlert("Recipe deleted successfully!", "success");
+        },
+        onError: (error) => {
+          console.error("Error deleting recipe:", error);
+          showAlert("Error: Unable to delete the recipe.", "error");
+        },
+      });
+    }
+  };
 };
+
+const sortedRecipes = computed(() =>
+  recipes.value.slice().sort((a, b) => a.name.localeCompare(b.name))
+);
 
 const handleImageUpload = (event) => {
   const file = event.target.files[0];
@@ -477,26 +553,49 @@ const confirmSubmitRecipe = () => {
   };
 };
 
-const submitRecipe = () => {
-  const formData = new FormData();
-
-  Object.keys(recipeForm.value).forEach(key => {
-    if (recipeForm.value[key] !== null && recipeForm.value[key] !== undefined) {
-      if (key === 'image' && recipeForm.value[key] instanceof File) {
-        formData.append(key, recipeForm.value[key]);
-      } else {
-        formData.append(key, recipeForm.value[key].toString());
-      }
+const editRecipe = (recipe) => {
+  showConfirmModal.value = true;
+  confirmModalConfig.value = {
+    title: 'Edit Recipe',
+    message: 'Are you sure you want to edit this recipe?',
+    onConfirm: () => {
+      showAddRecipeModal.value = true;
+      editingRecipe.value = recipe;
+      recipeForm.value = {
+        id: recipe.id,
+        name: recipe.name,
+        description: recipe.description,
+        ingredients: recipe.ingredients,
+        instructions: recipe.instructions,
+      };
     }
-  });
+  };
+};
 
+const submitRecipe = () => {
   if (editingRecipe.value) {
-    formData.append('_method', 'PUT');
-    router.post(route('chef.updateRecipe', editingRecipe.value.id), formData, {
-      preserveState: true,
-      preserveScroll: true,
-      onSuccess: handleRecipeSuccess,
-      onError: handleRecipeError,
+    router.put(route("chef.updateRecipe", { recipe: recipeForm.value.id }), recipeForm.value, {
+      onSuccess: () => {
+        const recipeIndex = recipes.value.findIndex((r) => r.id === recipeForm.value.id);
+        if (recipeIndex > -1) {
+          recipes.value[recipeIndex] = { ...recipeForm.value };
+        }
+        closeModal();
+        showAlert("Recipe updated successfully!", "success");
+      },
+      onError: () => {
+        showAlert("There was an error updating the recipe.", "error");
+      },
+    });
+  } else {
+    router.post(route("chef.storeRecipe"), recipeForm.value, {
+      onSuccess: () => {
+        recipes.value.push(recipeForm.value);
+        showAlert("Recipe added successfully!", "success");
+      },
+      onError: (errors) => {
+        showAlert("There was an error adding the recipe: " + Object.values(errors).join(", "), "error");
+      },
     });
   }
 };
