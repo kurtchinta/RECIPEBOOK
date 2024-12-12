@@ -46,10 +46,8 @@ class ChefController extends Controller
         return Inertia::render('Chef/CreateRecipe', ['categories' => $categories]);
     }
 
-     public function storeRecipe(Request $request)
+    public function storeRecipe(Request $request)
     {
-        \Log::info('Received recipe data:', $request->all());
-        
         $validatedData = $request->validate([
             'recipe_name' => 'required|string|max:255',
             'description' => 'required|string',
@@ -62,19 +60,19 @@ class ChefController extends Controller
         ]);
 
         try {
-            $imagePath = null;
-            if ($request->hasFile('image')) {
-                $imagePath = $request->file('image')->store('recipe_images', 'public');
-            }
+            $imagePath = $request->hasFile('image') 
+                ? $request->file('image')->store('recipe_images', 'public') 
+                : null;
 
-            $recipe = new Recipe($validatedData);
-            $recipe->url_image = $imagePath;
-            $recipe->user_id = Auth::id();
-            $recipe->save();
+            $recipe = Recipe::create([
+                ...$validatedData,
+                'url_image' => $imagePath,
+                'user_id' => Auth::id(),
+            ]);
 
             return response()->json([
                 'message' => 'Recipe added successfully.',
-                'recipe' => $recipe
+                'recipe' => $recipe,
             ], 201);
         } catch (\Exception $e) {
             \Log::error('Failed to add recipe: ' . $e->getMessage());
@@ -110,17 +108,18 @@ class ChefController extends Controller
             $recipe = Recipe::where('user_id', Auth::id())->findOrFail($id);
 
             if ($request->hasFile('image')) {
-                $recipe->deleteImage();
-                $imagePath = $request->file('image')->store('recipe_images', 'public');
-                $validatedData['url_image'] = $imagePath;
+                if ($recipe->url_image) {
+                    Storage::disk('public')->delete($recipe->url_image);
+                }
+                $validatedData['url_image'] = $request->file('image')->store('recipe_images', 'public');
             }
 
             $recipe->update($validatedData);
 
-            return redirect()->route('chef.dashboard')->with('message', 'Recipe updated successfully.');
+            return response()->json(['message' => 'Recipe updated successfully.', 'recipe' => $recipe]);
         } catch (\Exception $e) {
             \Log::error('Failed to update recipe: ' . $e->getMessage());
-            return redirect()->back()->withErrors('Failed to update recipe. Please try again.');
+            return response()->json(['error' => 'Failed to update recipe. Please try again.'], 500);
         }
     }
 
@@ -128,7 +127,10 @@ class ChefController extends Controller
     {
         try {
             $recipe = Recipe::where('user_id', Auth::id())->findOrFail($id);
-            $recipe->deleteImage();
+
+            if ($recipe->url_image) {
+                Storage::disk('public')->delete($recipe->url_image);
+            }
             $recipe->delete();
 
             return redirect()->route('chef.dashboard')->with('message', 'Recipe deleted successfully.');

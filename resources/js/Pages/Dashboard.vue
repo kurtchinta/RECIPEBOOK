@@ -2,25 +2,6 @@
   <AuthenticatedLayout>
     <Head :title="`Welcome, ${$page.props.auth.user.name}`" />
     <div class="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200">
-      <!-- Header -->
-      <header class="bg-white shadow-md">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div class="flex justify-between items-center">
-            <div class="flex items-center space-x-4">
-              <div class="text-left">
-                <p class="text-lg font-semibold text-gray-900">{{ $page.props.auth.user.name }}</p>
-                <p class="text-sm text-gray-500">{{ $page.props.auth.user.email }}</p>
-              </div>
-            </div>
-            <div class="flex items-center space-x-4">
-              <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                {{ getRole($page.props.auth.user.role_id) }}
-              </span>
-            </div>
-          </div>
-        </div>
-      </header>
-
       <!-- Main Content -->
       <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="bg-white p-8 rounded-2xl shadow-lg">

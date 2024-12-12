@@ -1,18 +1,20 @@
 <template>
-  <Head title="Chef's Command Center" />
+  <Head title="Chef Management" />
   <AuthenticatedLayout>
     <div class="flex h-screen bg-gray-100">
       <!-- Sidebar -->
       <aside class="w-64 bg-white shadow-md">
         <div class="p-6 flex flex-col items-center">
-          <img :src="`https://ui-avatars.com/api/?name=${$page.props.auth.user.name}&background=random`" alt="User Avatar" class="w-24 h-24 rounded-full mb-4" />
-          <p class="mt-2 text-xl font-semibold text-gray-800">{{ getRole($page.props.auth.user.role_id) }}</p>
-          <h2 class="text-xl font-semibold text-gray-800">{{ $page.props.auth.user.name }}</h2>
-          <p class="text-sm text-gray-600">{{ $page.props.auth.user.email }}</p>
+          <img :src="`https://ui-avatars.com/api/?name=${$page.props.auth.user.name}&background=random`" alt="User Avatar" class="w-24 h-24 rounded-full mb-4 border-4 border-blue-500 shadow-lg" />
+          <h2 class="text-xl font-bold text-gray-800">{{ $page.props.auth.user.name }}</h2>
+          <p class="text-sm text-gray-600 mb-2">{{ $page.props.auth.user.email }}</p>
+          <p class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
+            {{ getRole($page.props.auth.user.role_id) }}
+          </p>
         </div>
         <nav class="mt-6">
           <a v-for="item in navItems" :key="item.name" :href="item.href" 
-             class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-100 hover:text-blue-700 transition-colors duration-200">
+             class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200">
             <component :is="item.icon" class="h-5 w-5 mr-3" />
             {{ item.name }}
           </a>
@@ -36,38 +38,27 @@
             </div>
           </section>
           
-          <!-- Recent Recipes -->
-          <section class="mb-12">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">Recent Recipes</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div v-for="recipe in recentRecipes" :key="recipe.id" 
-                   class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-                <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ recipe.recipe_name }}</h3>
-                <p class="text-sm text-gray-600 mb-2">{{ getCategoryName(recipe.category_id) }}</p>
-                <p class="text-sm text-gray-500">Created: {{ formatDate(recipe.created_at) }}</p>
-              </div>
-            </div>
-          </section>
-          
           <!-- Recipe Management -->
           <section>
             <div class="flex justify-between items-center mb-6">
               <h2 class="text-3xl font-bold text-gray-800">Recipe Collection</h2>
-              <button @click="showAddRecipeForm = true" 
-                      class="bg-blue-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-blue-700 transition-colors duration-300 flex items-center shadow-lg">
+              <button @click="openRecipeModal()" 
+                      class="bg-blue-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-blue-700 transition-colors duration-300 flex items-center shadow-lg">
                 <PlusIcon class="h-5 w-5 mr-2" />
                 Add New Recipe
               </button>
             </div>
             
             <!-- Recipe Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div v-if="recipes.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               <div v-for="recipe in recipes" :key="recipe.id" 
                    class="bg-white overflow-hidden shadow-lg rounded-xl transition-all duration-300 transform hover:scale-105">
                 <img :src="recipe.url_image || '/placeholder.svg'" :alt="recipe.recipe_name" class="w-full h-48 object-cover">
                 <div class="p-6">
                   <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ recipe.recipe_name }}</h3>
-                  <p class="text-sm text-gray-600 mb-4">{{ getCategoryName(recipe.category_id) }}</p>
+                  <p :style="{ color: getCategoryColor(recipe.category_id).text, backgroundColor: getCategoryColor(recipe.category_id).bg }" class="text-sm mb-4 font-medium inline-block px-2 py-1 rounded-full">
+                    {{ getCategoryName(recipe.category_id) }}
+                  </p>
                   <div class="flex items-center justify-between text-gray-500 mb-4">
                     <span class="flex items-center">
                       <ClockIcon class="w-4 h-4 mr-1" />
@@ -81,10 +72,10 @@
                   <div class="flex justify-between items-center">
                     <button @click="viewRecipeDetails(recipe)" 
                             class="bg-blue-600 text-white px-4 py-2 rounded-md transition duration-300 ease-in-out hover:bg-blue-700">
-                      View Recipe
+                      View more details
                     </button>
                     <div class="flex space-x-2">
-                      <button @click="editRecipe(recipe)"
+                      <button @click="openRecipeModal(recipe)"
                               class="bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 transition-colors duration-300">
                         <PencilIcon class="h-5 w-5" />
                       </button>
@@ -97,16 +88,28 @@
                 </div>
               </div>
             </div>
+            <div v-else class="text-center py-12">
+              <BookOpenIcon class="h-24 w-24 text-gray-400 mx-auto mb-4" />
+              <p class="text-gray-500 text-lg">No recipes found. Add a new recipe to get started!</p>
+            </div>
           </section>
         </div>
       </main>
 
       <!-- Add/Edit Recipe Modal -->
-      <TransitionRoot appear :show="showAddRecipeForm" as="template">
+      <TransitionRoot appear :show="showRecipeModal" as="template">
         <Dialog as="div" @close="closeRecipeModal" class="relative z-50">
           <div class="fixed inset-0 overflow-y-auto">
             <div class="flex min-h-full items-center justify-center p-4 text-center">
-              <TransitionChild as="template" enter="duration-300 ease-out" enter-from="opacity-0 scale-95" enter-to="opacity-100 scale-100" leave="duration-200 ease-in" leave-from="opacity-100 scale-100" leave-to="opacity-0 scale-95">
+              <TransitionChild 
+                as="template" 
+                enter="duration-300 ease-out" 
+                enter-from="opacity-0 scale-95" 
+                enter-to="opacity-100 scale-100" 
+                leave="duration-200 ease-in" 
+                leave-from="opacity-100 scale-100" 
+                leave-to="opacity-0 scale-95"
+              >
                 <DialogPanel class="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                   <DialogTitle as="h3" class="text-lg font-medium leading-6 text-gray-900 mb-4">
                     {{ editingRecipe ? 'Edit Recipe' : 'Create New Recipe' }}
@@ -114,7 +117,7 @@
                   <form @submit.prevent="confirmSubmitRecipe" class="space-y-4">
                     <div v-for="field in recipeFormFields" :key="field.id">
                       <label :for="field.id" class="block text-sm font-medium text-gray-700">
-                        {{ field.label }} <span class="text-red-500" v-if="field.props?.required">*</span>
+                        {{ field.label }}
                       </label>
                       <component 
                         :is="field.component"
@@ -123,14 +126,13 @@
                         v-bind="field.props || {}"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
                       >
-                        <option v-if="field.id === 'category_id'" value="">Select a category</option>
-                        <option v-if="field.id === 'category_id'" v-for="category in categories" :key="category.id" :value="category.id">
-                          {{ category.category_name }}
-                        </option>
+                        <template v-if="field.id === 'category_id'">
+                          <option value="">Select a category</option>
+                          <option v-for="category in categories" :key="category.id" :value="category.id">
+                            {{ category.category_name }}
+                          </option>
+                        </template>
                       </component>
-                      <p v-if="!recipeForm[field.id] && field.props?.required" class="mt-1 text-sm text-red-500">
-                        This field is required
-                      </p>
                     </div>
                     <div>
                       <label for="image" class="block text-sm font-medium text-gray-700">Recipe Image</label>
@@ -148,10 +150,17 @@
                       />
                     </div>
                     <div class="mt-6 flex justify-end space-x-3">
-                      <button type="button" @click="closeRecipeModal" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                      <button 
+                        type="button" 
+                        @click="closeRecipeModal" 
+                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                      >
                         Cancel
                       </button>
-                      <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                      <button 
+                        type="submit" 
+                        class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
                         {{ editingRecipe ? 'Update Recipe' : 'Add Recipe' }}
                       </button>
                     </div>
@@ -188,18 +197,31 @@
                       <UsersIcon class="w-5 h-5 mr-2" />
                       {{ selectedRecipe?.servings }} servings
                     </span>
-                    <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                    <span :style="{ color: getCategoryColor(selectedRecipe?.category_id).text, backgroundColor: getCategoryColor(selectedRecipe?.category_id).bg }" class="px-3 py-1 rounded-full text-sm font-medium">
                       {{ getCategoryName(selectedRecipe?.category_id) }}
                     </span>
                   </div>
-                  <p class="text-gray-700 mb-4">{{ selectedRecipe?.description }}</p>
-                  <div class="mb-4">
-                    <h3 class="text-xl font-semibold mb-2">Ingredients</h3>
-                    <p class="text-gray-700">{{ selectedRecipe?.ingredients }}</p>
-                  </div>
-                  <div>
-                    <h3 class="text-xl font-semibold mb-2">Procedure</h3>
-                    <p class="text-gray-700">{{ selectedRecipe?.procedure }}</p>
+                  <div class="space-y-4 max-h-[calc(100vh-24rem)] overflow-y-auto pr-4 custom-scrollbar">
+                    <div>
+                      <h3 class="text-xl font-semibold mb-2">Description</h3>
+                      <p class="text-gray-700">{{ selectedRecipe?.description }}</p>
+                    </div>
+                    <div>
+                      <h3 class="text-xl font-semibold mb-2">Ingredients</h3>
+                      <ul class="list-disc list-inside text-gray-700">
+                        <li v-for="ingredient in selectedRecipe?.ingredients.split('\n')" :key="ingredient" class="mb-2 break-words">
+                          {{ ingredient.trim() }}
+                        </li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h3 class="text-xl font-semibold mb-2">Procedure</h3>
+                      <ul class="list-decimal list-inside text-gray-700">
+                        <li v-for="(step, index) in selectedRecipe?.procedure.split('\n')" :key="index" class="mb-2 break-words">
+                          {{ step.trim() }}
+                        </li>
+                      </ul>
+                    </div>
                   </div>
                 </DialogPanel>
               </TransitionChild>
@@ -264,7 +286,6 @@ const props = defineProps({
   chefs: Array,
   roles: Array,
   users: Array,
-  showAddRecipeForm: Boolean,
   recipes: {
     type: Array,
     default: () => []
@@ -288,7 +309,8 @@ const totalRecipesCreated = ref(0);
 const totalCategories = ref(0);
 const recentRecipes = ref([]);
 
-const showAddRecipeForm = ref(false);
+const showRecipeModal = ref(false);
+const showConfirmModal = ref(false);
 const editingRecipe = ref(null);
 const selectedRecipe = ref(null);
 const recipeForm = ref({
@@ -302,8 +324,6 @@ const recipeForm = ref({
   image: null,
 });
 
-// Confirmation modal
-const showConfirmModal = ref(false);
 const confirmModalConfig = ref({
   title: '',
   message: '',
@@ -312,9 +332,8 @@ const confirmModalConfig = ref({
 
 // Navigation items
 const navItems = [
-  { name: 'Dashboard', href: route('chef.dashboard'), icon: HomeIcon },
+  { name: 'Dashboard', href: '#dashboard', icon: HomeIcon },
   { name: 'Recipes', href: '#recipes', icon: BookOpenIcon },
-  { name: 'Statistics', href: '#statistics', icon: ChartBarIcon },
 ];
 
 // Computed properties
@@ -326,13 +345,13 @@ const dashboardStats = computed(() => [
 ]);
 
 const recipeFormFields = [
-  { id: 'recipe_name', label: 'Recipe Name', component: 'input', props: { type: 'text', required: true } },
-  { id: 'description', label: 'Description', component: 'textarea', props: { rows: 3, required: true } },
-  { id: 'ingredients', label: 'Ingredients', component: 'textarea', props: { rows: 3, required: true } },
-  { id: 'procedure', label: 'Procedure', component: 'textarea', props: { rows: 3, required: true } },
-  { id: 'category_id', label: 'Category', component: 'select', props: { required: true } },
-  { id: 'prep_time', label: 'Preparation Time', component: 'input', props: { type: 'text', required: true, placeholder: 'e.g., 30 minutes' } },
-  { id: 'servings', label: 'Servings', component: 'input', props: { type: 'number', required: true, min: 1 } },
+  { id: 'recipe_name', label: 'Recipe Name', component: 'input', props: { type: 'text' } },
+  { id: 'description', label: 'Description', component: 'textarea' },
+  { id: 'ingredients', label: 'Ingredients', component: 'textarea' },
+  { id: 'procedure', label: 'Procedure', component: 'textarea' },
+  { id: 'category_id', label: 'Category', component: 'select' },
+  { id: 'prep_time', label: 'Preparation Time', component: 'input', props: { type: 'text', placeholder: 'e.g., 30 minutes' } },
+  { id: 'servings', label: 'Servings', component: 'input', props: { type: 'number', min: 1 } },
 ];
 
 // Methods
@@ -346,9 +365,49 @@ const getCategoryName = (categoryId) => {
   return category ? category.category_name : 'Uncategorized';
 };
 
-const formatDate = (dateString) => {
-  const options = { year: 'numeric', month: 'long', day: 'numeric' };
-  return new Date(dateString).toLocaleDateString(undefined, options);
+const getCategoryColor = (categoryId) => {
+  const category = categories.value.find(c => c.id === categoryId);
+  if (category) {
+    switch (category.category_name.toLowerCase()) {
+      case 'main course':
+        return { text: '#FFA500', bg: '#FFF3E0' };
+      case 'appetizer':
+        return { text: '#FFD700', bg: '#FFFDE7' };
+      case 'dessert':
+        return { text: '#FF69B4', bg: '#FCE4EC' };
+      case 'beverage':
+        return { text: '#00CED1', bg: '#E0F7FA' };
+      case 'side dish':
+        return { text: '#32CD32', bg: '#F1F8E9' };
+      default:
+        return { text: '#000000', bg: '#FFFFFF' };
+    }
+  }
+  return { text: '#000000', bg: '#FFFFFF' };
+};
+
+const openRecipeModal = (recipe = null) => {
+  editingRecipe.value = recipe;
+  if (recipe) {
+    recipeForm.value = { ...recipe };
+  } else {
+    recipeForm.value = {
+      recipe_name: '',
+      description: '',
+      ingredients: '',
+      procedure: '',
+      category_id: '',
+      prep_time: '',
+      servings: '',
+      image: null,
+    };
+  }
+  showRecipeModal.value = true;
+};
+
+const closeRecipeModal = () => {
+  showRecipeModal.value = false;
+  editingRecipe.value = null;
 };
 
 const closeConfirmModal = () => {
@@ -367,36 +426,6 @@ const confirmAction = () => {
   closeConfirmModal();
 };
 
-const showAlert = (message, type) => {
-  showConfirmModal.value = true;
-  confirmModalConfig.value = {
-    title: type.charAt(0).toUpperCase() + type.slice(1),
-    message: message,
-    onConfirm: closeConfirmModal
-  };
-};
-
-const closeRecipeModal = () => {
-  showAddRecipeForm.value = false;
-  editingRecipe.value = null;
-  recipeForm.value = {
-    recipe_name: '',
-    description: '',
-    ingredients: '',
-    procedure: '',
-    category_id: '',
-    prep_time: '',
-    servings: '',
-    image: null,
-  };
-};
-
-const editRecipe = (recipe) => {
-  editingRecipe.value = recipe;
-  recipeForm.value = { ...recipe };
-  showAddRecipeForm.value = true;
-};
-
 const confirmDeleteRecipe = (recipeId) => {
   showConfirmModal.value = true;
   confirmModalConfig.value = {
@@ -413,11 +442,21 @@ const deleteRecipe = (recipeId) => {
     onSuccess: () => {
       recipes.value = recipes.value.filter(recipe => recipe.id !== recipeId);
       updateDashboardStats();
-      showAlert("Recipe deleted successfully!", "success");
+      showConfirmModal.value = true;
+      confirmModalConfig.value = {
+        title: 'Success',
+        message: 'Recipe deleted successfully!',
+        onConfirm: closeConfirmModal
+      };
     },
     onError: (error) => {
       console.error("Error deleting recipe:", error);
-      showAlert("Error: Unable to delete the recipe.", "error");
+      showConfirmModal.value = true;
+      confirmModalConfig.value = {
+        title: 'Error',
+        message: 'Unable to delete the recipe.',
+        onConfirm: closeConfirmModal
+      };
     },
   });
 };
@@ -440,23 +479,6 @@ const confirmSubmitRecipe = () => {
 
 const submitRecipe = () => {
   const formData = new FormData();
-  
-  const requiredFields = [
-    'recipe_name',
-    'description',
-    'ingredients',
-    'procedure',
-    'category_id',
-    'prep_time',
-    'servings'
-  ];
-
-  const emptyFields = requiredFields.filter(field => !recipeForm.value[field]);
-  
-  if (emptyFields.length > 0) {
-    showAlert("Please fill in all required fields: " + emptyFields.join(", "), "error");
-    return;
-  }
 
   Object.keys(recipeForm.value).forEach(key => {
     if (recipeForm.value[key] !== null && recipeForm.value[key] !== undefined) {
@@ -473,33 +495,32 @@ const submitRecipe = () => {
     router.post(route('chef.updateRecipe', editingRecipe.value.id), formData, {
       preserveState: true,
       preserveScroll: true,
-      onSuccess: (page) => {
-        closeRecipeModal();
-        updateRecipes(page.props.recipes);
-        updateDashboardStats();
-        showAlert("Recipe updated successfully!", "success");
-      },
-      onError: (errors) => {
-        const errorMessages = Object.values(errors).join(", ");
-        showAlert("Error updating recipe: " + errorMessages, "error");
-      },
-    });
-  } else {
-    router.post(route('chef.storeRecipe'), formData, {
-      preserveState: true,
-      preserveScroll: true,
-      onSuccess: (page) => {
-        closeRecipeModal();
-        updateRecipes(page.props.recipes);
-        updateDashboardStats();
-        showAlert("Recipe added successfully!", "success");
-      },
-      onError: (errors) => {
-        const errorMessages = Object.values(errors).join(", ");
-        showAlert("Error adding recipe: " + errorMessages, "error");
-      },
+      onSuccess: handleRecipeSuccess,
+      onError: handleRecipeError,
     });
   }
+};
+
+const handleRecipeSuccess = (page) => {
+  closeRecipeModal();
+  updateRecipes(page.props.recipes);
+  updateDashboardStats();
+  showConfirmModal.value = true;
+  confirmModalConfig.value = {
+    title: 'Success',
+    message: `Recipe ${editingRecipe.value ? 'updated' : 'added'} successfully!`,
+    onConfirm: closeConfirmModal
+  };
+};
+
+const handleRecipeError = (errors) => {
+  const errorMessages = Object.values(errors).join(", ");
+  showConfirmModal.value = true;
+  confirmModalConfig.value = {
+    title: 'Error',
+    message: `Error ${editingRecipe.value ? 'updating' : 'adding'} recipe: ${errorMessages}`,
+    onConfirm: closeConfirmModal
+  };
 };
 
 const viewRecipeDetails = (recipe) => {
@@ -530,15 +551,42 @@ const fetchDashboardData = async () => {
     totalCategories.value = data.totalCategories;
     recentRecipes.value = data.recentRecipes;
     categories.value = data.categories;
+    recipes.value = data.recipes;
+    updateDashboardStats();
   } catch (error) {
     console.error('Error fetching dashboard stats:', error);
-    showAlert("Error: Unable to fetch dashboard statistics.", "error");
+    showConfirmModal.value = true;
+    confirmModalConfig.value = {
+      title: 'Error',
+      message: 'Unable to fetch dashboard statistics.',
+      onConfirm: closeConfirmModal
+    };
   }
 };
 
 // Lifecycle hooks
 onMounted(() => {
   fetchDashboardData();
-  updateDashboardStats();
 });
 </script>
+
+<style scoped>
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #4F46E5 #E5E7EB;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #E5E7EB;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #4F46E5;
+  border-radius: 4px;
+}
+</style>

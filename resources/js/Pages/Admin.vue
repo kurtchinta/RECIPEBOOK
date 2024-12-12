@@ -1,20 +1,20 @@
 <template>
   <Head title="Recipe Book Manager" />
   <AuthenticatedLayout>
-    <div class="flex flex-col lg:flex-row min-h-screen bg-gray-100">
+    <div class="flex h-screen bg-gray-100">
       <!-- Sidebar -->
-      <aside class="w-full lg:w-64 bg-white shadow-md">
+      <aside class="w-64 bg-white shadow-md">
         <div class="p-6 flex flex-col items-center">
-          <div class="mb-6 text-center">
-            <img :src="`https://ui-avatars.com/api/?name=${$page.props.auth.user.name}&background=random`" alt="User Avatar" class="w-24 h-24 rounded-full mx-auto" />
-            <p class="mt-2 text-xl font-semibold text-gray-800">{{ getRole($page.props.auth.user.role_id) }}</p>
-            <p class="mt-1 text-lg text-gray-600">{{ $page.props.auth.user.name }}</p>
-            <p class="mt-1 text-sm text-gray-500">{{ $page.props.auth.user.email }}</p>
-          </div>
+          <img :src="`https://ui-avatars.com/api/?name=${$page.props.auth.user.name}&background=random`" alt="User Avatar" class="w-24 h-24 rounded-full mb-4 border-4 border-green-500 shadow-lg" />
+          <h2 class="text-xl font-bold text-gray-800">{{ $page.props.auth.user.name }}</h2>
+          <p class="text-sm text-gray-600 mb-2">{{ $page.props.auth.user.email }}</p>
+          <p class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
+            {{ getRole($page.props.auth.user.role_id) }}
+          </p>
         </div>
-        <nav class="flex flex-col space-y-1 px-4">
-          <a v-for="(item, index) in navItems" :key="index" :href="item.href" 
-             class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors duration-200">
+        <nav class="mt-6">
+          <a v-for="item in navItems" :key="item.name" :href="item.href" 
+             class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200">
             <component :is="item.icon" class="h-5 w-5 mr-3" />
             {{ item.name }}
           </a>
@@ -23,28 +23,27 @@
 
       <!-- Main Content -->
       <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
-        <div class="container mx-auto px-4 py-8">
-          <!-- Statistics -->
-          <section id="statistics" class="mb-12">
-            <h2 class="text-3xl font-semibold text-gray-800 mb-6">Dashboard Overview</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div v-for="stat in statistics" :key="stat.title" 
-                   class="bg-white rounded-xl shadow-md p-6 transform hover:scale-105 transition-all duration-300">
-                <div class="flex items-center justify-between mb-4">
-                  <h3 class="text-lg font-semibold text-gray-600">{{ stat.title }}</h3>
-                  <component :is="stat.icon" class="h-8 w-8 text-gray-500" />
-                </div>
-                <p class="text-3xl font-bold text-gray-800">{{ stat.value }}</p>
+        <div class="container mx-auto px-6 py-8">
+          <h1 class="text-4xl font-bold text-gray-800 mb-8">Admin Dashboard</h1>
+          
+          <!-- Dashboard Stats -->
+          <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <div v-for="stat in statistics" :key="stat.title" 
+                 class="bg-white p-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300">
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="text-lg font-semibold text-gray-700">{{ stat.title }}</h3>
+                <component :is="stat.icon" class="h-8 w-8 text-gray-500" />
               </div>
+              <p class="text-3xl font-bold text-gray-800">{{ stat.value }}</p>
             </div>
           </section>
-
+          
           <!-- User Management -->
           <section id="users" class="mb-12">
             <div class="flex justify-between items-center mb-6">
-              <h2 class="text-3xl font-semibold text-gray-800">User Management</h2>
+              <h2 class="text-3xl font-bold text-gray-800">User Management</h2>
               <button @click="showAddUserModal = true" 
-                      class="bg-blue-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-blue-700 transition-colors duration-300 flex items-center">
+                      class="bg-blue-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-blue-700 transition-colors duration-300 flex items-center shadow-lg">
                 <PlusIcon class="h-5 w-5 mr-2" />
                 Add User
               </button>
@@ -110,11 +109,7 @@
           <!-- Recipe Overview -->
           <section id="recipes" class="mb-12">
             <div class="flex justify-between items-center mb-6">
-              <h2 class="text-3xl font-semibold text-gray-800">Recipe Overview</h2>
-              <button @click="refreshRecipes" 
-                      class="text-blue-600 hover:text-blue-800 transition-colors duration-300">
-                <ArrowPathIcon class="h-6 w-6" />
-              </button>
+              <h2 class="text-3xl font-bold text-gray-800">Recipe Overview</h2>
             </div>
             <div class="bg-white rounded-xl shadow-md overflow-hidden">
               <div class="overflow-x-auto">
@@ -132,7 +127,7 @@
                       <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
                           <div class="flex-shrink-0 h-10 w-10">
-                            <img class="h-10 w-10 rounded-full object-cover" :src="recipe.image || 'https://via.placeholder.com/150'" :alt="recipe.title" />
+                            <img class="h-10 w-10 rounded-full object-cover" :src="recipe.image || '/placeholder.svg'" :alt="recipe.title" />
                           </div>
                           <div class="ml-4">
                             <div class="text-sm font-medium text-gray-900">{{ recipe.title }}</div>
@@ -156,50 +151,51 @@
             </div>
           </section>
 
-        <!-- Activity Logs -->
-<section id="activity" class="mb-12">
-  <div class="flex justify-between items-center mb-6">
-    <h2 class="text-3xl font-semibold text-gray-800">Activity Logs</h2>
-    <button @click="refreshActivityLogs" 
-            class="text-blue-600 hover:text-blue-800 transition-colors duration-300">
-      <ArrowPathIcon class="h-6 w-6" />
-    </button>
-  </div>
-  <div class="bg-white rounded-xl shadow-md overflow-hidden">
-    <div class="overflow-x-auto">
-      <table class="w-full">
-        <thead>
-          <tr class="bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-            <th class="px-6 py-3">Activity</th>
-            <th class="px-6 py-3">Date</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-200">
-          <tr v-for="log in activityLogs" :key="log.id" class="hover:bg-gray-50">
-            <td class="px-6 py-4">
-              <div class="flex items-center">
-                <div class="flex-shrink-0">
-                  <component :is="getActivityIcon(log.action)" class="h-6 w-6 text-gray-500" />
-                </div>
-                <div class="ml-4">
-                  <p class="text-sm font-medium text-gray-900">{{ log.action }} by {{ log.user.name }}</p>
-                  <p class="text-xs text-gray-500">{{ log.user.email }}</p>
-                </div>
+          <!-- Activity Logs -->
+          <section id="activity" class="mb-12">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-3xl font-bold text-gray-800">Activity Logs</h2>
+              <button @click="refreshActivityLogs" 
+                      class="bg-blue-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-blue-700 transition-colors duration-300 flex items-center shadow-lg">
+                <ArrowPathIcon class="h-5 w-5 mr-2" />
+                Refresh Logs
+              </button>
+            </div>
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead>
+                    <tr class="bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <th class="px-6 py-3">Activity</th>
+                      <th class="px-6 py-3">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-200">
+                    <tr v-for="log in activityLogs" :key="log.id" class="hover:bg-gray-50">
+                      <td class="px-6 py-4">
+                        <div class="flex items-center">
+                          <div class="flex-shrink-0">
+                            <component :is="getActivityIcon(log.action)" class="h-6 w-6 text-gray-500" />
+                          </div>
+                          <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-900">{{ log.action }} by {{ log.user.name }}</p>
+                            <p class="text-xs text-gray-500">{{ log.user.email }}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ formatDate(log.created_at) }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              {{ formatDate(log.created_at) }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
+            </div>
+          </section>
         </div>
       </main>
     </div>
+
     <!-- Confirmation Modal -->
     <TransitionRoot appear :show="showConfirmModal" as="template">
       <Dialog as="div" @close="closeConfirmModal" class="relative z-50">
@@ -255,97 +251,98 @@
       </Dialog>
     </TransitionRoot>
 
-   <!-- Add/Edit User Modal -->
-<TransitionRoot appear :show="showAddUserModal" as="template">
-  <Dialog as="div" @close="closeModal" class="relative z-50">
-    <div class="fixed inset-0 overflow-y-auto">
-      <div class="flex min-h-full items-center justify-center p-4 text-center">
-        <TransitionChild as="template" enter="duration-300 ease-out" enter-from="opacity-0 scale-95" enter-to="opacity-100 scale-100" leave="duration-200 ease-in" leave-from="opacity-100 scale-100" leave-to="opacity-0 scale-95">
-          <DialogPanel class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-            <DialogTitle as="h3" class="text-lg font-medium leading-6 text-gray-900 mb-4">
-              {{ editingUser ? 'Edit User' : 'Add New User' }}
-            </DialogTitle>
-            <form @submit.prevent="submitUser" class="mt-4 space-y-4">
-              <div>
-                <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
-                <input
-                  type="text"
-                  id="name"
-                  v-model="userForm.name"
-                  required
-                  :disabled="editingUser"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-300 focus:ring focus:ring-gray-200 focus:ring-opacity-50"
-                  placeholder="Enter name"
-                />
-              </div>
-              <div>
-                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                <input
-                  type="email"
-                  id="email"
-                  v-model="userForm.email"
-                  required
-                  :disabled="editingUser"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-300 focus:ring focus:ring-gray-200 focus:ring-opacity-50"
-                  placeholder="Enter email"
-                />
-              </div>
+    <!-- Add/Edit User Modal -->
+    <TransitionRoot appear :show="showAddUserModal" as="template">
+      <Dialog as="div" @close="closeModal" class="relative z-50">
+        <div class="fixed inset-0 overflow-y-auto">
+          <div class="flex min-h-full items-center justify-center p-4 text-center">
+            <TransitionChild as="template" enter="duration-300 ease-out" enter-from="opacity-0 scale-95" enter-to="opacity-100 scale-100" leave="duration-200 ease-in" leave-from="opacity-100 scale-100" leave-to="opacity-0 scale-95">
+              <DialogPanel class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                <DialogTitle as="h3" class="text-lg font-medium leading-6 text-gray-900 mb-4">
+                  {{ editingUser ? 'Edit User' : 'Add New User' }}
+                </DialogTitle>
+                <form @submit.prevent="submitUser" class="mt-4 space-y-4">
+                  <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+                    <input
+                      type="text"
+                      id="name"
+                      v-model="userForm.name"
+                      required
+                      :disabled="editingUser"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                      placeholder="Enter name"
+                    />
+                  </div>
+                  <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input
+                      type="email"
+                      id="email"
+                      v-model="userForm.email"
+                      required
+                      :disabled="editingUser"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                      placeholder="Enter email"
+                    />
+                  </div>
 
-              <!-- Only show password and role fields for adding a user -->
-              <div v-if="!editingUser">
-                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                <input
-                  type="password"
-                  id="password"
-                  v-model="userForm.password"
-                  required
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-300 focus:ring focus:ring-gray-200 focus:ring-opacity-50"
-                  placeholder="Enter password"
-                />
-              </div>
+                  <!-- Only show password field for adding a new user -->
+                  <div v-if="!editingUser">
+                    <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input
+                      type="password"
+                      id="password"
+                      v-model="userForm.password"
+                      required
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                      placeholder="Enter password"
+                    />
+                  </div>
 
-              <!-- Role Selection Dropdown -->
-              <div>
-                <label for="role" class="block text-sm font-medium text-gray-700">Role</label>
-                <select
-                  id="role"
-                  v-model="userForm.role_id"
-                  required
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-300 focus:ring focus:ring-gray-200 focus:ring-opacity-50"
-                >
-                  <option v-for="role in roles" :key="role.id" :value="role.id">{{ role.role_user }}</option>
-                </select>
-              </div>
+                  <!-- Role Selection Dropdown -->
+                  <div>
+                    <label for="role" class="block text-sm font-medium text-gray-700">Role</label>
+                    <select
+                      id="role"
+                      v-model="userForm.role_id"
+                      required
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                    >
+                      <option v-for="role in roles" :key="role.id" :value="role.id">{{ role.role_user }}</option>
+                    </select>
+                  </div>
 
-              <div class="mt-6 flex justify-end space-x-3">
-                <button
-                  type="button"
-                  @click="closeModal"
-                  class="inline-flex justify-center rounded-md border border-transparent bg-gray-200 px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  class="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                >
-                  {{ editingUser ? 'Edit User' : 'Add User' }}
-                </button>
-              </div>
-            </form>
-          </DialogPanel>
-        </TransitionChild>
-      </div>
-    </div>
-  </Dialog>
-</TransitionRoot>
+                  <div class="mt-6 flex justify-end space-x-3">
+                    <button
+                      type="button"
+                      @click="closeModal"
+                      class="inline-flex justify-center rounded-md border border-transparent bg-gray-200 px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      class="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                    >
+                      {{ editingUser ? 'Update User' : 'Add User' }}
+                    </button>
+                  </div>
+                </form>
+              </DialogPanel>
+            </TransitionChild>
+          </div>
+        </div>
+      </Dialog>
+    </TransitionRoot>
   </AuthenticatedLayout>
 </template>
+
 <script setup>
 import { ref, computed } from "vue";
 import { Head, router } from "@inertiajs/vue3";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import { Dialog, DialogPanel, DialogTitle, DialogOverlay, TransitionChild, TransitionRoot } from '@headlessui/vue';
+import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import { 
   ChartBarIcon, 
   ClockIcon, 
@@ -355,7 +352,6 @@ import {
   PencilIcon, 
   TrashIcon,
   XMarkIcon,
-  Bars3Icon,
   UserIcon,
   ShieldCheckIcon,
   BookOpenIcon,
@@ -380,14 +376,47 @@ const userForm = ref({
   name: '',
   email: '',
   password: '',
-  role_id: null,  // Set to null initially to handle the dynamic value
+  role_id: null,
 });
+
+const users = ref([...props.users]);
+const recipes = ref(props.recipes);
+const activityLogs = ref(props.activityLogs);
+const showAddUserModal = ref(false);
+const editingUser = ref(null);
+
+// Confirmation modal
+const showConfirmModal = ref(false);
+const confirmModalConfig = ref({
+  title: '',
+  message: '',
+  onConfirm: null
+});
+
+// Navigation items
+const navItems = [
+  { name: 'Dashboard', href: '#statistics', icon: ChartBarIcon },
+  { name: 'Users', href: '#users', icon: UserGroupIcon },
+  { name: 'Recipes', href: '#recipes', icon: BookOpenIcon },
+  { name: 'Activity', href: '#activity', icon: ClockIcon },
+];
+
+// Computed properties
+const statistics = computed(() => [
+  { title: "Total Users", value: users.value.length, icon: UserIcon },
+  { title: "Total Recipes", value: recipes.value.length, icon: BookOpenIcon },
+  { title: "Total Chefs", value: users.value.filter((u) => u.role_id === 2).length, icon: UserGroupIcon },
+  { title: "Total Admins", value: users.value.filter((u) => u.role_id === 1).length, icon: ShieldCheckIcon },
+]);
+
+const sortedUsers = computed(() =>
+  users.value.slice().sort((a, b) => a.role_id - b.role_id)
+);
 
 // Methods
 const getRole = (role_id) => {
-  // Use the roles array to dynamically get the role name
   const role = props.roles.find(r => r.id === role_id);
-  return role ? role.role_user : "Unknown";  // Return the role's name, or "Unknown" if not found
+  return role ? role.role_user : "Unknown";
 };
 
 const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
@@ -525,13 +554,13 @@ const deleteRecipe = (recipeId) => {
     }
   };
 };
-// Fetch and update activity logs
+
 const refreshActivityLogs = () => {
   router.get(route("admin.getActivityLogs"), {}, {
     preserveState: true,
     preserveScroll: true,
     onSuccess: (page) => {
-      activityLogs.value = page.props.activityLogs; // Update the activity logs with the fresh data
+      activityLogs.value = page.props.activityLogs;
       showAlert("Activity logs refreshed successfully!", "success");
     },
     onError: (error) => {
@@ -551,42 +580,30 @@ const getActivityIcon = (type) => {
       return ClockIcon;
   }
 };
-
-// Reactive data initialization
-const users = ref([...props.users]);
-const recipes = ref(props.recipes);
-const activityLogs = ref(props.activityLogs);
-const showAddUserModal = ref(false);
-const editingUser = ref(null);
-
-// Confirmation modal
-const showConfirmModal = ref(false);
-const confirmModalConfig = ref({
-  title: '',
-  message: '',
-  onConfirm: null
-});
-
-// Navigation items
-const navItems = [
-  { name: 'Dashboard', href: '#statistics', icon: ChartBarIcon },
-  { name: 'Users', href: '#users', icon: UserGroupIcon },
-  { name: 'Recipes', href: '#recipes', icon: BookOpenIcon },
-  { name: 'Activity', href: '#activity', icon: ClockIcon },
-];
-
-// Computed properties for statistics
-const statistics = computed(() => [
-  { title: "Total Users", value: users.value.length, icon: UserIcon },
-  { title: "Total Recipes", value: recipes.value.length, icon: BookOpenIcon },
-  { title: "Total Chefs", value: users.value.filter((u) => u.role_id === 2).length, icon: UserGroupIcon },
-  { title: "Total Admins", value: users.value.filter((u) => u.role_id === 1).length, icon: ShieldCheckIcon },
-]);
-
-const sortedUsers = computed(() =>
-  users.value.slice().sort((a, b) => a.role_id - b.role_id)
-);
 </script>
+
 <style scoped>
-/* Add any additional styles here */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #4F46E5 #E5E7EB;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #E5E7EB;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #4F46E5;
+  border-radius: 4px;
+  border: 2px solid #E5E7EB;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #4338CA;
+}
 </style>
