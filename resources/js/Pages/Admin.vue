@@ -48,19 +48,22 @@
                 Add User
               </button>
             </div>
-            <div class="bg-white rounded-xl shadow-md overflow-hidden">
-              <div class="overflow-x-auto">
-                <table class="w-full">
-                  <thead>
-                    <tr class="bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      <th class="px-6 py-3">Name</th>
-                      <th class="px-6 py-3">Email</th>
-                      <th class="px-6 py-3">Role</th>
-                      <th class="px-6 py-3">Actions</th>
+            <div class="grid grid-cols-1 gap-6 mb-10">
+              <div v-for="(roleUsers, role) in groupedUsers" :key="role" class="bg-white p-4 rounded-lg shadow-md overflow-x-auto">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 capitalize">{{ role }}s</h2>
+                <table class="min-w-full divide-y divide-gray-200">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No.</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
-                  <tbody class="divide-y divide-gray-200">
-                    <tr v-for="user in sortedUsers" :key="user.id" class="hover:bg-gray-50">
+                  <tbody class="bg-white divide-y divide-gray-200">
+                    <tr v-for="(user, index) in roleUsers" :key="user.id">
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ index + 1 }}</td>
                       <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
                           <div class="flex-shrink-0 h-10 w-10">
@@ -71,9 +74,7 @@
                           </div>
                         </div>
                       </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">{{ user.email }}</div>
-                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ user.email }}</td>
                       <td class="px-6 py-4 whitespace-nowrap">
                         <span :class="{
                           'bg-green-100 text-green-800': getRole(user.role_id) === 'Admin',
@@ -252,7 +253,7 @@
     </TransitionRoot>
 
     <!-- Add/Edit User Modal -->
-    <TransitionRoot appear :show="showAddUserModal" as="template">
+    <TransitionRoot appear :showappear :show="showAddUserModal" as="template">
       <Dialog as="div" @close="closeModal" class="relative z-50">
         <div class="fixed inset-0 overflow-y-auto">
           <div class="flex min-h-full items-center justify-center p-4 text-center">
@@ -359,6 +360,8 @@ import {
 
 const props = defineProps({
   admins: Array,
+  statistics: Array,
+  recipeSummary: Array,
   roles: Array,
   users: Array,
   showAddUserModal: Boolean,
@@ -412,6 +415,18 @@ const statistics = computed(() => [
 const sortedUsers = computed(() =>
   users.value.slice().sort((a, b) => a.role_id - b.role_id)
 );
+
+const groupedUsers = computed(() => {
+  const grouped = {};
+  users.value.forEach(user => {
+    const role = getRole(user.role_id).toLowerCase();
+    if (!grouped[role]) {
+      grouped[role] = [];
+    }
+    grouped[role].push(user);
+  });
+  return grouped;
+});
 
 // Methods
 const getRole = (role_id) => {

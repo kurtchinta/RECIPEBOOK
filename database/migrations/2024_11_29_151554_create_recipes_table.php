@@ -19,7 +19,7 @@ return new class extends Migration
             $table->text('procedure');
             $table->text('prep_time');
             $table->integer('servings');
-            $table->text('url_image');
+            $table->text('url_image')->nullable();  // Make 'url_image' nullable
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');  // Foreign key for user (creator)
             $table->foreignId('category_id')->constrained('categories')->onDelete('cascade');  // Foreign key for category
             $table->timestamps();  // 'created_at' and 'updated_at' columns

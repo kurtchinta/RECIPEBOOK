@@ -19,12 +19,10 @@ class ChefController extends Controller
         $recipes = Recipe::where('user_id', Auth::id())->with('category')->get();
         $recentRecipes = Recipe::where('user_id', Auth::id())->latest()->take(5)->get();
 
-        return Inertia::render('Chef/Dashboard', [
-            'categories' => $categories,
+        return Inertia::render('Chef', [
             'recipes' => $recipes,
+            'categories' => $categories,
             'recentRecipes' => $recentRecipes,
-            'totalRecipes' => $recipes->count(),
-            'totalCategories' => $categories->count(),
         ]);
     }
 
@@ -39,28 +37,6 @@ class ChefController extends Controller
         ]);
     }
 
-    public function store(Request $request)
-{
-    $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'description' => 'required|string',
-        'ingredients' => 'required|array',
-    ]);
-
-    // Save the recipe
-    Recipe::create($validated);
-
-    return back()->with('message', 'Recipe created successfully!');
-}
-
-
-    public function createRecipe()
-    {
-        $categories = Category::all();
-
-        return Inertia::render('Chef/CreateRecipe', ['categories' => $categories]);
-    }
-
     public function storeRecipe(Request $request)
     {
         $validated = $request->validate([
@@ -70,35 +46,51 @@ class ChefController extends Controller
             'procedure' => 'required|string',
             'prep_time' => 'required|string',
             'servings' => 'required|integer|min:1',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'category_id' => 'required|exists:categories,id',
+        ]);
+        
+        $userId = Auth::id();
+
+        try {
+            $recipe = Recipe::create([
+                'recipe_name' => $validated['recipe_name'],
+                'description' => $validated['description'],
+                'ingredients' => $validated['ingredients'],
+                'procedure' => $validated['procedure'],
+                'prep_time' => $validated['prep_time'],
+                'servings' => $validated['servings'],
+                'category_id' => $validated['category_id'],
+                'user_id' => $userId,
+            ]);
+            return redirect()->route('chef.dashboard')->with('success', 'Recipe added successfully!');
+        } catch (\Exception $e) {
+            \Log::error('Failed to save recipe: ' . $e->getMessage());
+            return redirect()->route('chef.dashboard')->with('error', 'Failed to add the recipe. Please try again.');
+        }
+    }
+
+    public function updateRecipe(Request $request, Recipe $recipe)
+    {
+        if ($recipe->user_id !== Auth::id()) {
+            return redirect()->route('chef.dashboard')->with('error', 'You are not authorized to edit this recipe.');
+        }
+
+        $validated = $request->validate([
+            'recipe_name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'ingredients' => 'required|string',
+            'procedure' => 'required|string',
+            'prep_time' => 'required|string',
+            'servings' => 'required|integer|min:1',
             'category_id' => 'required|exists:categories,id',
         ]);
 
-        $recipe = Recipe::create([
-            'name' => $validated['name'],
-            'servings' => $validated['servings'],
-            'category_id' => $validated['category_id'],
-            
-        ]);
-
         try {
-            $imagePath = $request->hasFile('image') 
-                ? $request->file('image')->store('recipe_images', 'public') 
-                : null;
-
-            $recipe = Recipe::create([
-                ...$validatedData,
-                'url_image' => $imagePath,
-                'user_id' => Auth::id(),
-            ]);
-
-            return response()->json([
-                'message' => 'Recipe added successfully.',
-                'recipe' => $recipe,
-            ], 201);
+            $recipe->update($validated);
+            return redirect()->route('chef.dashboard')->with('success', 'Recipe updated successfully!');
         } catch (\Exception $e) {
-            \Log::error('Failed to add recipe: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to add recipe. Please try again.'], 500);
+            \Log::error('Failed to update recipe: ' . $e->getMessage());
+            return redirect()->route('chef.dashboard')->with('error', 'Failed to update the recipe. Please try again.');
         }
     }
 
@@ -113,62 +105,29 @@ class ChefController extends Controller
         ]);
     }
 
-    public function updateRecipe(Request $request, $id)
+    public function deleteRecipe(Recipe $recipe)
     {
-        $validatedData = $request->validate([
-            'recipe_name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'ingredients' => 'required|string',
-            'procedure' => 'required|string',
-            'prep_time' => 'required|string',
-            'servings' => 'required|integer|min:1',
-            'category_id' => 'required|exists:categories,id',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-        ]);
-
-        try {
-            $recipe = Recipe::where('user_id', Auth::id())->findOrFail($id);
-
-            if ($request->hasFile('image')) {
-                if ($recipe->url_image) {
-                    Storage::disk('public')->delete($recipe->url_image);
-                }
-                $validatedData['url_image'] = $request->file('image')->store('recipe_images', 'public');
-            }
-
-            $recipe->update($validatedData);
-
-            return response()->json(['message' => 'Recipe updated successfully.', 'recipe' => $recipe]);
-        } catch (\Exception $e) {
-            \Log::error('Failed to update recipe: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to update recipe. Please try again.'], 500);
+        if ($recipe->user_id !== Auth::id()) {
+            return redirect()->route('chef.dashboard')->with('error', 'Failed to delete the recipe. Please try again.');
         }
-    }
 
-    public function deleteRecipe($id)
-    {
         try {
-            $recipe = Recipe::where('user_id', Auth::id())->findOrFail($id);
-
-            if ($recipe->url_image) {
-                Storage::disk('public')->delete($recipe->url_image);
-            }
             $recipe->delete();
-
-            return redirect()->route('chef.dashboard')->with('message', 'Recipe deleted successfully.');
+            return redirect()->route('chef.dashboard')->with('success', 'Recipe deleted successfully!');
         } catch (\Exception $e) {
             \Log::error('Failed to delete recipe: ' . $e->getMessage());
-            return redirect()->back()->withErrors('Failed to delete recipe. Please try again.');
+            return redirect()->route('chef.dashboard')->with('error', 'Failed to delete the recipe. Please try again.');
         }
     }
 
     public function getDashboardStats()
     {
-        $totalRecipes = Recipe::where('user_id', Auth::id())->count();
+        $userId = Auth::id();
+        $totalRecipes = Recipe::where('user_id', $userId)->count();
         $totalCategories = Category::count();
-        $recentRecipes = Recipe::where('user_id', Auth::id())->latest()->take(5)->get();
+        $recentRecipes = Recipe::where('user_id', $userId)->latest()->take(5)->get();
         $categories = Category::all();
-        $recipes = Recipe::where('user_id', Auth::id())->with('category')->get();
+        $recipes = Recipe::where('user_id', $userId)->with('category')->get();
 
         return response()->json([
             'totalRecipes' => $totalRecipes,
@@ -180,3 +139,4 @@ class ChefController extends Controller
         ]);
     }
 }
+

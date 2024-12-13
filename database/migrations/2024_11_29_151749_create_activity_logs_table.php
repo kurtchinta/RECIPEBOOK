@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('table_name'); // Name of the table affected
             $table->string('action', 10); // Action performed (e.g., 'Create', 'Update')
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP')); // Explicitly define created_at with default value
+            $table->string('role_user',10);
         });
     }
 

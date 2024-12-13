@@ -93,7 +93,7 @@ class AdminController extends Controller
 
         return redirect()->back()->with('message', 'User deleted successfully.');
     }
-
+    
     /**
      * Add a new user to the system.
      */

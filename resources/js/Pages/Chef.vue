@@ -116,106 +116,84 @@
                   </DialogTitle>
                   <form @submit.prevent="confirmSubmitRecipe" class="space-y-4">
                     <div>
-                    <label for="name" class="block text-sm font-medium text-gray-700">Recipe Name</label>
-                    <input
-                      type="text"
-                      id="name"
-                      v-model="recipeForm.recipe_name"
-                      required
-                      :disabled="editingRecipe"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                      placeholder="Enter recipe name"
-                    />
-                  </div>
-                  <div>
-                    <label for="name" class="block text-sm font-medium text-gray-700">Description</label>
-                    <input
-                      type="text"
-                      id="name"
-                      v-model="recipeForm.description"
-                      required
-                      :disabled="editingRecipe"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                      placeholder="Enter recipe description"
-                    />
-                  </div>
-                  <div>
-                    <label for="name" class="block text-sm font-medium text-gray-700">Ingredients</label>
-                    <input
-                      type="text"
-                      id="name"
-                      v-model="recipeForm.ingredients"
-                      required
-                      :disabled="editingRecipe"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                      placeholder="Enter recipe ingredients"
-                    />
-                  </div>
-                  <div>
-                    <label for="name" class="block text-sm font-medium text-gray-700">Procedure</label>
-                    <input
-                      type="text"
-                      id="name"
-                      v-model="recipeForm.procedure"
-                      required
-                      :disabled="editingRecipe"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                      placeholder="Enter recipe procedure"
-                    />
-                  </div>
-                  <div>
-                    <label for="name" class="block text-sm font-medium text-gray-700">Preperation Time</label>
-                    <input
-                      type="text"
-                      id="name"
-                      v-model="recipeForm.prep_time"
-                      required
-                      :disabled="editingRecipe"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                      placeholder="Eg. 30 minutes"
-                    />
-                  </div>
-                  <div>
-                    <label for="name" class="block text-sm font-medium text-gray-700">Servings</label>
-                    <input
-                      type="text"
-                      id="name"
-                      v-model="recipeForm.servings"
-                      required
-                      :disabled="editingRecipe"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                      placeholder="Enter serving size"
-                    />
-                  </div>
-                  <div>
-  <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
-  <select
-    id="category"
-    v-model="recipeForm.category_id"
-    required
-    :disabled="editingRecipe"
-    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-  >
-    <option value="" disabled>Select a category</option>
-    <option v-for="category in categories" :key="category.id" :value="category.id">
-      {{ category.category_name }}
-    </option>
-  </select>
-</div>
-                    <div>
-                      <label for="image" class="block text-sm font-medium text-gray-700">Recipe Image</label>
+                      <label for="recipe_name" class="block text-sm font-medium text-gray-700">Recipe Name</label>
                       <input
-                        type="file"
-                        id="image"
-                        @change="handleImageUpload"
-                        accept="image/*"
-                        class="mt-1 block w-full text-sm text-gray-500
-                          file:mr-4 file:py-2 file:px-4
-                          file:rounded-md file:border-0
-                          file:text-sm file:font-semibold
-                          file:bg-blue-50 file:text-blue-700
-                          hover:file:bg-blue-100"
+                        type="text"
+                        id="recipe_name"
+                        v-model="recipeForm.recipe_name"
+                        required
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                        placeholder="Enter recipe name"
                       />
+                    </div>
+                    <div>
+                      <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+                      <textarea
+                        id="description"
+                        v-model="recipeForm.description"
+                        required
+                        rows="3"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                        placeholder="Enter recipe description"
+                      ></textarea>
+                    </div>
+                    <div>
+                      <label for="ingredients" class="block text-sm font-medium text-gray-700">Ingredients</label>
+                      <textarea
+                        id="ingredients"
+                        v-model="recipeForm.ingredients"
+                        required
+                        rows="4"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                        placeholder="Enter recipe ingredients (one per line)"
+                      ></textarea>
+                    </div>
+                    <div>
+                      <label for="procedure" class="block text-sm font-medium text-gray-700">Procedure</label>
+                      <textarea
+                        id="procedure"
+                        v-model="recipeForm.procedure"
+                        required
+                        rows="4"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                        placeholder="Enter recipe procedure (step by step)"
+                      ></textarea>
+                    </div>
+                    <div>
+                      <label for="prep_time" class="block text-sm font-medium text-gray-700">Preparation Time</label>
+                      <input
+                        type="text"
+                        id="prep_time"
+                        v-model="recipeForm.prep_time"
+                        required
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                        placeholder="E.g. 30 minutes"
+                      />
+                    </div>
+                    <div>
+                      <label for="servings" class="block text-sm font-medium text-gray-700">Servings</label>
+                      <input
+                        type="number"
+                        id="servings"
+                        v-model="recipeForm.servings"
+                        required
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                        placeholder="Enter serving size"
+                      />
+                    </div>
+                    <div>
+                      <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
+                      <select
+                        id="category"
+                        v-model="recipeForm.category_id"
+                        required
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                      >
+                        <option value="" disabled>Select a category</option>
+                        <option v-for="category in categories" :key="category.id" :value="category.id">
+                          {{ category.category_name }}
+                        </option>
+                      </select>
                     </div>
                     <div class="mt-6 flex justify-end space-x-3">
                       <button 
@@ -229,7 +207,7 @@
                         type="submit" 
                         class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                       >
-                        {{ editingRecipe ? 'Update Recipe' : 'Add Recipe' }}
+                        {{ editingRecipe ? 'Edit Recipe' : 'Add Recipe' }}
                       </button>
                     </div>
                   </form>
@@ -265,7 +243,8 @@
                       <UsersIcon class="w-5 h-5 mr-2" />
                       {{ selectedRecipe?.servings }} servings
                     </span>
-                    <span :style="{ color: getCategoryColor(selectedRecipe?.category_id).text, backgroundColor: getCategoryColor(selectedRecipe?.category_id).bg }" class="px-3 py-1 rounded-full text-sm font-medium">
+                    <span :style="{ color: getCategoryColor(selectedRecipe?.category_id).text,
+backgroundColor: getCategoryColor(selectedRecipe?.category_id).bg }" class="px-3 py-1 rounded-full text-sm font-medium">
                       {{ getCategoryName(selectedRecipe?.category_id) }}
                     </span>
                   </div>
@@ -284,11 +263,11 @@
                     </div>
                     <div>
                       <h3 class="text-xl font-semibold mb-2">Procedure</h3>
-                      <ul class="list-decimal list-inside text-gray-700">
+                      <ol class="list-decimal list-inside text-gray-700">
                         <li v-for="(step, index) in selectedRecipe?.procedure.split('\n')" :key="index" class="mb-2 break-words">
                           {{ step.trim() }}
                         </li>
-                      </ul>
+                      </ol>
                     </div>
                   </div>
                 </DialogPanel>
@@ -325,6 +304,60 @@
           </div>
         </Dialog>
       </TransitionRoot>
+
+      <!-- Creative Alert -->
+      <TransitionRoot appear :show="showCreativeAlert" as="template">
+        <Dialog as="div" @close="closeCreativeAlert" class="relative z-50">
+          <TransitionChild
+            as="template"
+            enter="duration-300 ease-out"
+            enter-from="opacity-0"
+            enter-to="opacity-100"
+            leave="duration-200 ease-in"
+            leave-from="opacity-100"
+            leave-to="opacity-0"
+          >
+            <div class="fixed inset-0 bg-black bg-opacity-25" />
+          </TransitionChild>
+
+          <div class="fixed inset-0 overflow-y-auto">
+            <div class="flex min-h-full items-center justify-center p-4 text-center">
+              <TransitionChild
+                as="template"
+                enter="duration-300 ease-out"
+                enter-from="opacity-0 scale-95"
+                enter-to="opacity-100 scale-100"
+                leave="duration-200 ease-in"
+                leave-from="opacity-100 scale-100"
+                leave-to="opacity-0 scale-95"
+              >
+                <DialogPanel class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                  <div class="flex items-center justify-center mb-4">
+                    <div class="bg-green-100 rounded-full p-3">
+                      <CheckIcon class="h-6 w-6 text-green-600" />
+                    </div>
+                  </div>
+                  <DialogTitle as="h3" class="text-lg font-medium leading-6 text-gray-900 text-center mb-2">
+                    Recipe {{ creativeAlertConfig.action }} Successfully!
+                  </DialogTitle>
+                  <p class="text-sm text-gray-500 text-center mb-4">
+                    {{ creativeAlertConfig.message }}
+                  </p>
+                  <div class="mt-4 flex justify-center">
+                    <button
+                      type="button"
+                      class="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                      @click="closeCreativeAlert"
+                    >
+                      Got it, thanks!
+                    </button>
+                  </div>
+                </DialogPanel>
+              </TransitionChild>
+            </div>
+          </div>
+        </Dialog>
+      </TransitionRoot>
     </div>
   </AuthenticatedLayout>
 </template>
@@ -348,6 +381,7 @@ import {
   BookmarkIcon,
   FireIcon,
   TagIcon,
+  CheckIcon,
 } from '@heroicons/vue/24/solid';
 
 const props = defineProps({
@@ -379,6 +413,7 @@ const recentRecipes = ref([]);
 
 const showRecipeModal = ref(false);
 const showConfirmModal = ref(false);
+const showCreativeAlert = ref(false);
 const editingRecipe = ref(null);
 const selectedRecipe = ref(null);
 
@@ -399,6 +434,11 @@ const confirmModalConfig = ref({
   onConfirm: null
 });
 
+const creativeAlertConfig = ref({
+  action: '',
+  message: '',
+});
+
 // Navigation items
 const navItems = [
   { name: 'Dashboard', href: '#dashboard', icon: HomeIcon },
@@ -412,16 +452,6 @@ const dashboardStats = computed(() => [
   { title: 'Total Categories', value: totalCategories.value, icon: TagIcon },
   { title: 'Recent Recipes', value: recentRecipes.value.length, icon: BookmarkIcon },
 ]);
-
-const recipeFormFields = [
-  { id: 'recipe_name', label: 'Recipe Name', component: 'input', props: { type: 'text' } },
-  { id: 'description', label: 'Description', component: 'textarea' },
-  { id: 'ingredients', label: 'Ingredients', component: 'textarea' },
-  { id: 'procedure', label: 'Procedure', component: 'textarea' },
-  { id: 'category_id', label: 'Category', component: 'select' },
-  { id: 'prep_time', label: 'Preparation Time', component: 'input', props: { type: 'text', placeholder: 'e.g., 30 minutes' } },
-  { id: 'servings', label: 'Servings', component: 'input', props: { type: 'number', min: 1 } },
-];
 
 // Methods
 const getRole = (roleId) => {
@@ -445,7 +475,7 @@ const getCategoryColor = (categoryId) => {
       case 'dessert':
         return { text: '#FF69B4', bg: '#FCE4EC' };
       case 'beverage':
-        return { text: '#00CED1', bg: '#E0F7FA' };
+        return { text: '#0000FF', bg: '#E8F3FF' }; // Changed to blue
       case 'side dish':
         return { text: '#32CD32', bg: '#F1F8E9' };
       default:
@@ -484,7 +514,6 @@ const closeConfirmModal = () => {
   confirmModalConfig.value = {
     title: '',
     message: '',
-    onConfirm: null
   };
 };
 
@@ -509,89 +538,62 @@ const confirmDeleteRecipe = (recipeId) => {
   confirmModalConfig.value = {
     title: 'Delete Recipe',
     message: 'Are you sure you want to delete this recipe?',
-    onConfirm: () => deleteRecipe(recipeId)
-  };
-};
-
-const deleteRecipe = (recipeId) => {
-  showConfirmModal.value = true;
-  confirmModalConfig.value = {
-    title: 'Delete Recipe',
-    message: 'Are you sure you want to delete this recipe?',
     onConfirm: () => {
       router.delete(route("chef.deleteRecipe", { recipe: recipeId }), {
         onSuccess: () => {
           recipes.value = recipes.value.filter((recipe) => recipe.id !== recipeId);
-          showAlert("Recipe deleted successfully!", "success");
+          showCreativeAlert.value = true;
+          creativeAlertConfig.value = {
+            action: 'Deleted',
+            message: 'Your recipe has been removed from your collection.'
+          };
         },
         onError: (error) => {
           console.error("Error deleting recipe:", error);
           showAlert("Error: Unable to delete the recipe.", "error");
         },
       });
-    }
+    },
   };
-};
-
-const sortedRecipes = computed(() =>
-  recipes.value.slice().sort((a, b) => a.name.localeCompare(b.name))
-);
-
-const handleImageUpload = (event) => {
-  const file = event.target.files[0];
-  if (file) {
-    recipeForm.value.image = file;
-  }
 };
 
 const confirmSubmitRecipe = () => {
-  showConfirmModal.value = true;
-  confirmModalConfig.value = {
-    title: editingRecipe.value ? 'Update Recipe' : 'Add Recipe',
-    message: `Are you sure you want to ${editingRecipe.value ? 'update' : 'add'} this recipe?`,
-    onConfirm: submitRecipe
-  };
-};
-
-const editRecipe = (recipe) => {
-  showConfirmModal.value = true;
-  confirmModalConfig.value = {
-    title: 'Edit Recipe',
-    message: 'Are you sure you want to edit this recipe?',
-    onConfirm: () => {
-      showAddRecipeModal.value = true;
-      editingRecipe.value = recipe;
-      recipeForm.value = {
-        id: recipe.id,
-        name: recipe.name,
-        description: recipe.description,
-        ingredients: recipe.ingredients,
-        instructions: recipe.instructions,
-      };
-    }
-  };
+  submitRecipe();
 };
 
 const submitRecipe = () => {
   if (editingRecipe.value) {
-    router.put(route("chef.updateRecipe", { recipe: recipeForm.value.id }), recipeForm.value, {
+    router.post(route("chef.storeRecipe", { recipe: recipeForm.value.id }), recipeForm.value, {
+      preserveState: true,
+      preserveScroll: true,
       onSuccess: () => {
         const recipeIndex = recipes.value.findIndex((r) => r.id === recipeForm.value.id);
         if (recipeIndex > -1) {
           recipes.value[recipeIndex] = { ...recipeForm.value };
         }
-        closeModal();
-        showAlert("Recipe updated successfully!", "success");
+        closeRecipeModal();
+        showCreativeAlert.value = true;
+        creativeAlertConfig.value = {
+          action: 'Edited',
+          message: 'Recipe edited successfully!'
+        };
       },
-      onError: () => {
-        showAlert("There was an error updating the recipe.", "error");
+      onError: (errors) => {
+        showAlert("There was an error updating the recipe: " + Object.values(errors).join(", "), "error");
       },
     });
   } else {
     router.post(route("chef.storeRecipe"), recipeForm.value, {
+      preserveState: true,
+      preserveScroll: true,
       onSuccess: () => {
-        recipes.value.push(recipeForm.value);
-        showAlert("Recipe added successfully!", "success");
+        closeRecipeModal();
+        fetchDashboardData(); // Refresh the recipes list
+        showCreativeAlert.value = true;
+        creativeAlertConfig.value = {
+          action: 'Added',
+          message: 'Recipe added successfully!'
+        };
       },
       onError: (errors) => {
         showAlert("There was an error adding the recipe: " + Object.values(errors).join(", "), "error");
@@ -600,34 +602,16 @@ const submitRecipe = () => {
   }
 };
 
-const handleRecipeSuccess = (page) => {
-  closeRecipeModal();
-  updateRecipes(page.props.recipes);
-  updateDashboardStats();
-  showConfirmModal.value = true;
-  confirmModalConfig.value = {
-    title: 'Success',
-    message: `Recipe ${editingRecipe.value ? 'updated' : 'added'} successfully!`,
-    onConfirm: closeConfirmModal
-  };
-};
-
-const handleRecipeError = (errors) => {
-  const errorMessages = Object.values(errors).join(", ");
-  showConfirmModal.value = true;
-  confirmModalConfig.value = {
-    title: 'Error',
-    message: `Error ${editingRecipe.value ? 'updating' : 'adding'} recipe: ${errorMessages}`,
-    onConfirm: closeConfirmModal
-  };
-};
-
 const viewRecipeDetails = (recipe) => {
   selectedRecipe.value = recipe;
 };
 
 const closeRecipeDetails = () => {
   selectedRecipe.value = null;
+};
+
+const closeCreativeAlert = () => {
+  showCreativeAlert.value = false;
 };
 
 const updateRecipes = (newRecipes) => {
@@ -654,12 +638,7 @@ const fetchDashboardData = async () => {
     updateDashboardStats();
   } catch (error) {
     console.error('Error fetching dashboard stats:', error);
-    showConfirmModal.value = true;
-    confirmModalConfig.value = {
-      title: 'Error',
-      message: 'Unable to fetch dashboard statistics.',
-      onConfirm: closeConfirmModal
-    };
+    showAlert('Unable to fetch dashboard statistics.', 'error');
   }
 };
 
