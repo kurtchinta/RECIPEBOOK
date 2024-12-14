@@ -15,14 +15,15 @@ class ChefController extends Controller
 {
     public function dashboard()
     {
-        $categories = Category::all();
-        $recipes = Recipe::where('user_id', Auth::id())->with('category')->get();
-        $recentRecipes = Recipe::where('user_id', Auth::id())->latest()->take(5)->get();
+        $stats = DB::select('SELECT * FROM chef_stat');
+
+        $users = User::with('role')->get();
+        $roles = DB::table('roles')->get();
 
         return Inertia::render('Chef', [
-            'recipes' => $recipes,
-            'categories' => $categories,
-            'recentRecipes' => $recentRecipes,
+            'stats' => $stats,
+            'users' => $users,
+            'roles' => $roles,
         ]);
     }
 
@@ -68,7 +69,7 @@ class ChefController extends Controller
             return redirect()->route('chef.dashboard')->with('error', 'Failed to add the recipe. Please try again.');
         }
     }
-
+    
     public function updateRecipe(Request $request, Recipe $recipe)
     {
         if ($recipe->user_id !== Auth::id()) {

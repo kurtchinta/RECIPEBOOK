@@ -24,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'setDB' => SetDBConnection::class,
             'admin' => AdminMiddleware::class,
             'chef' => ChefMiddleware::class,
+            
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

@@ -26,19 +26,26 @@
         <div class="container mx-auto px-6 py-8">
           <h1 class="text-4xl font-bold text-gray-800 mb-8">Admin Dashboard</h1>
           
-          <!-- Dashboard Stats -->
-          <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            <div v-for="stat in statistics" :key="stat.title" 
-                 class="bg-white p-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300">
-              <div class="flex items-center justify-between mb-2">
-                <h3 class="text-lg font-semibold text-gray-700">{{ stat.title }}</h3>
-                <component :is="stat.icon" class="h-8 w-8 text-gray-500" />
-              </div>
-              <p class="text-3xl font-bold text-gray-800">{{ stat.value }}</p>
-            </div>
-          </section>
-          
-          <!-- User Management -->
+   <!-- Dashboard Stats -->
+   <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+    <div
+      v-for="stat in computedStatistics"
+      :key="stat.title"
+      class="bg-white p-6 rounded-xl shadow-lg transform hover:scale-105 hover:shadow-xl transition-all duration-300"
+    >
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-700">{{ stat.title }}</h3>
+        <component :is="stat.icon" class="h-8 w-8 text-gray-500" />
+      </div>
+      <p class="text-4xl font-extrabold text-gray-800">{{ stat.value }}</p>
+    </div>
+  </section>
+
+
+
+
+
+      <!-- User Management -->
           <section id="users" class="mb-12">
             <div class="flex justify-between items-center mb-6">
               <h2 class="text-3xl font-bold text-gray-800">User Management</h2>
@@ -49,7 +56,7 @@
               </button>
             </div>
             <div class="grid grid-cols-1 gap-6 mb-10">
-              <div v-for="(roleUsers, role) in groupedUsers" :key="role" class="bg-white p-4 rounded-lg shadow-md overflow-x-auto">
+              <div v-for="role in ['admin', 'chef', 'user']" :key="role" class="bg-white p-4 rounded-lg shadow-md overflow-x-auto">
                 <h2 class="text-2xl font-bold text-gray-800 mb-4 capitalize">{{ role }}s</h2>
                 <table class="min-w-full divide-y divide-gray-200">
                   <thead class="bg-gray-50">
@@ -62,7 +69,7 @@
                     </tr>
                   </thead>
                   <tbody class="bg-white divide-y divide-gray-200">
-                    <tr v-for="(user, index) in roleUsers" :key="user.id">
+                    <tr v-for="(user, index) in groupedUsers[role]" :key="user.id">
                       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ index + 1 }}</td>
                       <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
@@ -118,7 +125,7 @@
                   <thead>
                     <tr class="bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                       <th class="px-6 py-3">Title</th>
-                      <th class="px-6 py-3">Author</th>
+                      <th class="px-6 py-3">Chef</th>
                       <th class="px-6 py-3">Created At</th>
                       <th class="px-6 py-3">Actions</th>
                     </tr>
@@ -135,7 +142,7 @@
                           </div>
                         </div>
                       </td>
-                      <td class="px-6 py-4 whitespace-nowrap">{{ recipe.author }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap">{{ recipe.chef_name }}</td>
                       <td class="px-6 py-4 whitespace-nowrap">{{ formatDate(recipe.created_at) }}</td>
                       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button
@@ -253,7 +260,7 @@
     </TransitionRoot>
 
     <!-- Add/Edit User Modal -->
-    <TransitionRoot appear :showappear :show="showAddUserModal" as="template">
+    <TransitionRoot appear :show="showAddUserModal" as="template">
       <Dialog as="div" @close="closeModal" class="relative z-50">
         <div class="fixed inset-0 overflow-y-auto">
           <div class="flex min-h-full items-center justify-center p-4 text-center">
@@ -340,6 +347,7 @@
 </template>
 
 <script setup>
+import { defineProps } from 'vue';
 import { ref, computed } from "vue";
 import { Head, router } from "@inertiajs/vue3";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
@@ -358,22 +366,39 @@ import {
   BookOpenIcon,
 } from '@heroicons/vue/24/solid';
 
+// Define the props that are passed from the backend
 const props = defineProps({
-  admins: Array,
-  statistics: Array,
-  recipeSummary: Array,
-  roles: Array,
-  users: Array,
-  showAddUserModal: Boolean,
-  recipes: {
+  statistics: {
     type: Array,
-    default: () => []
+    default: () => ({
+      total_users: 0,
+      total_recipes: 0,
+      total_chefs: 0,
+      total_admins: 0,
+    }),
+    
   },
-  activityLogs: {
+  users: {
     type: Array,
-    default: () => []
+    default: () => [],
+  },
+  roles: {
+    type: Array,
+    default: () => [],
   }
 });
+
+// Map statistics to dashboard cards
+const computedStatistics = computed(() => [
+  { title: "Total Users", value: props.statistics[0].total_users, icon: UserIcon },
+  { title: "Total Recipes", value: props.statistics[0].total_recipes, icon: BookOpenIcon },
+  { title: "Total Chefs", value: props.statistics[0].total_chefs, icon: UserGroupIcon },
+  { title: "Total Admins", value: props.statistics[0].total_admins, icon: ShieldCheckIcon },
+]);
+
+const activityLogs = ref(props.activityLogs);
+const showAddUserModal = ref(false);
+const editingUser = ref(null);
 
 const userForm = ref({
   name: '',
@@ -381,12 +406,6 @@ const userForm = ref({
   password: '',
   role_id: null,
 });
-
-const users = ref([...props.users]);
-const recipes = ref(props.recipes);
-const activityLogs = ref(props.activityLogs);
-const showAddUserModal = ref(false);
-const editingUser = ref(null);
 
 // Confirmation modal
 const showConfirmModal = ref(false);
@@ -404,26 +423,21 @@ const navItems = [
   { name: 'Activity', href: '#activity', icon: ClockIcon },
 ];
 
-// Computed properties
-const statistics = computed(() => [
-  { title: "Total Users", value: users.value.length, icon: UserIcon },
-  { title: "Total Recipes", value: recipes.value.length, icon: BookOpenIcon },
-  { title: "Total Chefs", value: users.value.filter((u) => u.role_id === 2).length, icon: UserGroupIcon },
-  { title: "Total Admins", value: users.value.filter((u) => u.role_id === 1).length, icon: ShieldCheckIcon },
-]);
-
 const sortedUsers = computed(() =>
   users.value.slice().sort((a, b) => a.role_id - b.role_id)
 );
 
 const groupedUsers = computed(() => {
-  const grouped = {};
-  users.value.forEach(user => {
+  const grouped = {
+    admin: [],
+    chef: [],
+    user: []
+  };
+  props.users.forEach(user => {
     const role = getRole(user.role_id).toLowerCase();
-    if (!grouped[role]) {
-      grouped[role] = [];
+    if (grouped[role]) {
+      grouped[role].push(user);
     }
-    grouped[role].push(user);
   });
   return grouped;
 });
@@ -469,7 +483,7 @@ const deleteUser = (userId) => {
     onConfirm: () => {
       router.delete(route("admin.deleteUser", { user: userId }), {
         onSuccess: () => {
-          users.value = users.value.filter((user) => user.id !== userId);
+          props.users = props.users.filter((user) => user.id !== userId);
           showAlert("User deleted successfully!", "success");
         },
         onError: (error) => {
@@ -519,9 +533,9 @@ const submitUser = () => {
       role_id: userForm.value.role_id,
     }, {
       onSuccess: () => {
-        const userIndex = users.value.findIndex((u) => u.id === userForm.value.id);
+        const userIndex = props.users.findIndex((u) => u.id === userForm.value.id);
         if (userIndex > -1) {
-          users.value[userIndex] = { ...userForm.value };
+          props.users[userIndex] = { ...userForm.value };
         }
         closeModal();
         showAlert("User updated successfully!", "success");
@@ -533,7 +547,7 @@ const submitUser = () => {
   } else {
     router.post(route("admin.addUser"), userForm.value, {
       onSuccess: () => {
-        users.value.push(userForm.value);
+        props.users.push(userForm.value);
         closeModal();
         showAlert("User added successfully!", "success");
       },

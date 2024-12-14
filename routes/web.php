@@ -16,32 +16,35 @@ Route::get('/', function () {
     ]);
 });
 
+// Routes that require authentication and setDB middleware
 Route::middleware(['auth', 'setDB'])->group(function () {
+    // Dashboard route - AdminController
+    
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
     Route::get('/user', [AdminController::class, 'users'])->name('user');
 
+    // Admin routes - Ensure the correct route name is used
     Route::middleware('admin')->group(function () {
-        Route::get('/statistics', [AdminController::class, 'getStatistics']);
-        Route::get('/admin', [AdminController::class, 'display_info'])->name('admin');
+        Route::get('/admin', [AdminController::class, 'dashboard'])->name('admin');
         Route::delete('/admin/users/{user}', [AdminController::class, 'deleteUser'])->name('admin.deleteUser');
         Route::put('/admin/users/{user}/update-role', [AdminController::class, 'updateUserRole'])->name('admin.updateUserRole');
         Route::post('/admin/users', [AdminController::class, 'addUser'])->name('admin.addUser');
+        Route::post('/admin/refresh-stats', [AdminController::class, 'refreshStatistics'])->name('admin.refreshStats'); // Refresh stats
     });
-
+    // Chef routes
     Route::middleware('chef')->group(function () {
-        Route::get('/chef', [ChefController::class, 'display_info'])->name('chef');
+        Route::get('/chef', [ChefController::class, 'dashboard'])->name('chef');  // Chef profile info
         Route::get('/chef/dashboard', [ChefController::class, 'dashboard'])->name('chef.dashboard');
         Route::get('/chef/dashboard/stats', [ChefController::class, 'getDashboardStats'])->name('chef.getDashboardStats');
-        Route::post('/chef/recipes/create', [ChefController::class, 'createRecipe'])->name('chef.createRecipe');
         Route::post('/chef/recipes', [ChefController::class, 'storeRecipe'])->name('chef.storeRecipe');
         Route::get('/chef/recipes/{recipe}/edit', [ChefController::class, 'editRecipe'])->name('chef.editRecipe');
         Route::delete('/chef/recipes/{recipe}', [ChefController::class, 'deleteRecipe'])->name('chef.deleteRecipe');
-        Route::post('/chef/categories', [ChefController::class, 'storeCategory'])->name('chef.storeCategory');
     });
 
+    // Profile routes
     Route::prefix('profile')->group(function () {
         Route::get('/', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/', [ProfileController::class, 'update'])->name('profile.update');
@@ -49,4 +52,5 @@ Route::middleware(['auth', 'setDB'])->group(function () {
     });
 });
 
+// Authentication routes
 require __DIR__ . '/auth.php';

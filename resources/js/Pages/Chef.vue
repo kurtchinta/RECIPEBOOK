@@ -20,7 +20,7 @@
           </a>
         </nav>
       </aside>
-
+      
       <!-- Main Content -->
       <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
         <div class="container mx-auto px-6 py-8">
@@ -388,6 +388,15 @@ const props = defineProps({
   chefs: Array,
   roles: Array,
   users: Array,
+  stats: {
+    type: Array,
+    default: () => ({
+      total_main_courses: 0,
+      total_appetizers: 0,
+      total_desserts: 0,
+      total_beverages: 0,
+    }),
+  },
   recipes: {
     type: Array,
     default: () => []
@@ -447,10 +456,10 @@ const navItems = [
 
 // Computed properties
 const dashboardStats = computed(() => [
-  { title: 'Total Recipes', value: totalRecipes.value, icon: BookOpenIcon },
-  { title: 'Recipes Created', value: totalRecipesCreated.value, icon: FireIcon },
-  { title: 'Total Categories', value: totalCategories.value, icon: TagIcon },
-  { title: 'Recent Recipes', value: recentRecipes.value.length, icon: BookmarkIcon },
+  { title: 'Total Main Courses', value: props.stats[0].total_main_courses, icon: BookOpenIcon },
+  { title: 'Total Appetizers', value: props.stats[0].total_appetizers, icon: FireIcon },
+  { title: 'Total Desserts', value: props.stats[0].total_desserts, icon: TagIcon },
+  { title: 'Total Beverages', value: props.stats[0].total_beverages, icon: BookmarkIcon },
 ]);
 
 // Methods
@@ -575,7 +584,7 @@ const submitRecipe = () => {
         showCreativeAlert.value = true;
         creativeAlertConfig.value = {
           action: 'Edited',
-          message: 'Recipe edited successfully!'
+          message: 'Your recipe has been updated from your collection.'
         };
       },
       onError: (errors) => {
@@ -592,7 +601,7 @@ const submitRecipe = () => {
         showCreativeAlert.value = true;
         creativeAlertConfig.value = {
           action: 'Added',
-          message: 'Recipe added successfully!'
+          message: 'Your new recipe has been added to your collection.'
         };
       },
       onError: (errors) => {
