@@ -21,6 +21,15 @@ class AdminController extends Controller
     // Fetch data from the STATISTICS view
     $statistics = DB::select('SELECT * FROM STATISTICS');
 
+    $recentRecipes = DB::select('
+        SELECT users.id AS user_id, get_recent_recipe(users.id::bigint) AS recent_recipe 
+        FROM users 
+        WHERE users.role_id = 2
+    ');
+
+    \Log::info($recentRecipes); // Check the output in your logs
+
+
     // Fetch user and role information
     $users = User::with('role')->get();
     $roles = DB::table('roles')->get();
@@ -30,6 +39,7 @@ class AdminController extends Controller
         'statistics' => $statistics,
         'users' => $users,
         'roles' => $roles,
+        'recentRecipes' => $recentRecipes,
     ]);
     }
 
@@ -68,13 +78,19 @@ class AdminController extends Controller
      * Delete a user from the system.
      */
 
-    public function deleteUser(User $user)
+    public function deleteUser($id)
     {
+        $user = DB::table('users')->where('id', $id)->first();
+
         if ($user->role_id === 1) {
-            return redirect()->back()->with('error', 'Admin users cannot be deleted.');
+            return response()->json(['error' => 'Admin users cannot be deleted'], 403);
         }
 
-        $user->delete();
+        if (!$user) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        DB::table('users')->where('id', $id)->delete();
 
         return redirect()->back()->with('message', 'User deleted successfully.');
     }

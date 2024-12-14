@@ -159,7 +159,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import { Head, usePage } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
@@ -167,12 +167,7 @@ import {
   ClockIcon, 
   UsersIcon, 
   BookOpenIcon,
-  XMarkIcon,
-  HomeIcon,
-  UserIcon,
-  CogIcon,
-  HeartIcon,
-  StarIcon
+  XMarkIcon
 } from '@heroicons/vue/24/solid';
 
 const page = usePage();
@@ -198,8 +193,6 @@ const categories = ref(props.categories);
 const searchQuery = ref('');
 const selectedCategory = ref('');
 const selectedRecipe = ref(null);
-
-// Navigation items
 
 // Computed properties
 const filteredRecipes = computed(() => {
@@ -259,7 +252,7 @@ const getCategoryColor = (categoryId) => {
       case 'dessert':
         return { text: '#FF69B4', bg: '#FCE4EC' }; // Pink
       case 'beverage':
-        return { text: '#00CED1', bg: '#E0F7FA' }; // Turquoise
+        return { text: '#66ccff', bg: '#e6f7ff' }; // Turquoise
       case 'side dish':
         return { text: '#32CD32', bg: '#F1F8E9' }; // Lime Green
       default:
@@ -284,25 +277,6 @@ const viewRecipeDetails = (recipe) => {
 
 const closeRecipeDetails = () => {
   selectedRecipe.value = null;
-};
-
-// Lifecycle hooks
-onMounted(() => {
-  // Fetch recipes if not provided as props
-  if (recipes.value.length === 0) {
-    fetchRecipes();
-  }
-});
-
-const fetchRecipes = async () => {
-  try {
-    const response = await fetch(route('user.getRecipes'));
-    const data = await response.json();
-    recipes.value = data.recipes;
-    categories.value = data.categories;
-  } catch (error) {
-    console.error('Error fetching recipes:', error);
-  }
 };
 </script>
 

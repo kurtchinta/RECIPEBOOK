@@ -37,7 +37,7 @@
               <p class="text-3xl font-bold text-gray-800">{{ stat.value }}</p>
             </div>
           </section>
-          
+
           <!-- Recipe Management -->
           <section>
             <div class="flex justify-between items-center mb-6">
@@ -572,13 +572,15 @@ const confirmSubmitRecipe = () => {
 
 const submitRecipe = () => {
   if (editingRecipe.value) {
-    router.post(route("chef.storeRecipe", { recipe: recipeForm.value.id }), recipeForm.value, {
+    // PUT request to update the recipe
+    router.put(route("chef.updateRecipe", { recipe: recipeForm.value.id }), recipeForm.value, {
       preserveState: true,
       preserveScroll: true,
       onSuccess: () => {
+        // Update the recipe in the recipes array directly
         const recipeIndex = recipes.value.findIndex((r) => r.id === recipeForm.value.id);
         if (recipeIndex > -1) {
-          recipes.value[recipeIndex] = { ...recipeForm.value };
+          recipes.value[recipeIndex] = { ...recipeForm.value };  // Replace the old recipe with the updated one
         }
         closeRecipeModal();
         showCreativeAlert.value = true;
@@ -610,6 +612,7 @@ const submitRecipe = () => {
     });
   }
 };
+  
 
 const viewRecipeDetails = (recipe) => {
   selectedRecipe.value = recipe;

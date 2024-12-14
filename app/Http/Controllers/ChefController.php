@@ -27,17 +27,6 @@ class ChefController extends Controller
         ]);
     }
 
-    public function display_info()
-    {
-        $users = User::with('role')->get();
-        $roles = DB::table('roles')->get();
-
-        return Inertia::render('Chef', [
-            'users' => $users,
-            'roles' => $roles,
-        ]);
-    }
-
     public function storeRecipe(Request $request)
     {
         $validated = $request->validate([
@@ -75,7 +64,7 @@ class ChefController extends Controller
         if ($recipe->user_id !== Auth::id()) {
             return redirect()->route('chef.dashboard')->with('error', 'You are not authorized to edit this recipe.');
         }
-
+    
         $validated = $request->validate([
             'recipe_name' => 'required|string|max:255',
             'description' => 'required|string',
@@ -85,15 +74,16 @@ class ChefController extends Controller
             'servings' => 'required|integer|min:1',
             'category_id' => 'required|exists:categories,id',
         ]);
-
+    
         try {
-            $recipe->update($validated);
+            $recipe->update($validated);  // Update the existing recipe in the DB
             return redirect()->route('chef.dashboard')->with('success', 'Recipe updated successfully!');
         } catch (\Exception $e) {
             \Log::error('Failed to update recipe: ' . $e->getMessage());
             return redirect()->route('chef.dashboard')->with('error', 'Failed to update the recipe. Please try again.');
         }
     }
+    
 
     public function editRecipe($id)
     {
@@ -106,20 +96,26 @@ class ChefController extends Controller
         ]);
     }
 
-    public function deleteRecipe(Recipe $recipe)
+    public function deleteRecipe($id)
     {
-        if ($recipe->user_id !== Auth::id()) {
-            return redirect()->route('chef.dashboard')->with('error', 'Failed to delete the recipe. Please try again.');
+        $recipe = DB::table('recipes')->where('id', $id)->first();
+    
+        // Check if the recipe belongs to the authenticated user
+        if (!$recipe || $recipe->user_id !== Auth::id()) {
+            return response()->json(['error' => 'Recipe not found or you are not authorized to delete it'], 404);
         }
-
+    
         try {
-            $recipe->delete();
-            return redirect()->route('chef.dashboard')->with('success', 'Recipe deleted successfully!');
+            // Delete the recipe
+            DB::table('recipes')->where('id', $id)->delete();
+    
+            return redirect()->back()->with('message', 'Recipe deleted successfully.');
         } catch (\Exception $e) {
             \Log::error('Failed to delete recipe: ' . $e->getMessage());
-            return redirect()->route('chef.dashboard')->with('error', 'Failed to delete the recipe. Please try again.');
+            return response()->json(['error' => 'Failed to delete the recipe. Please try again.'], 500);
         }
     }
+    
 
     public function getDashboardStats()
     {

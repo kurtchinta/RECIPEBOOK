@@ -40,8 +40,42 @@
       <p class="text-4xl font-extrabold text-gray-800">{{ stat.value }}</p>
     </div>
   </section>
-
-
+  
+<!-- Chef Recent Recipe -->
+<section id="recent-recipes" class="mb-12">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-3xl font-bold text-gray-800">Recent Chef Recipe</h2>
+    </div>
+    <div class="bg-white rounded-xl shadow-md overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th class="px-6 py-3">Chef Name</th>
+              <th class="px-6 py-3">Recent Recipe</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <tr v-for="chef in filteredChefs" :key="chef.id" class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0 h-10 w-10">
+                    <img class="h-10 w-10 rounded-full" :src="`https://ui-avatars.com/api/?name=${chef.name}&background=random`" :alt="chef.name" />
+                  </div>
+                  <div class="ml-4">
+                    <div class="text-sm font-medium text-gray-900">{{ chef.name }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ chef.recent_recipe }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
 
 
 
@@ -348,7 +382,7 @@
 
 <script setup>
 import { defineProps } from 'vue';
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { Head, router } from "@inertiajs/vue3";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
@@ -385,15 +419,40 @@ const props = defineProps({
   roles: {
     type: Array,
     default: () => [],
+  },
+  recentRecipes: {
+    type: Array,
+    default: () => [],
   }
 });
+
+const filteredChefs = computed(() => {
+  // First, map recentRecipes by user_id for easier lookup
+  const recentRecipesMap = props.recentRecipes.reduce((map, recipe) => {
+    map[recipe.user_id] = recipe.recent_recipe;
+    return map;
+  }, {});
+
+  // Filter chefs and add the recent recipe to each chef
+  return props.users
+    .filter(user => user.role.id === 2) // Assuming '2' is the chef role ID
+    .map(chef => ({
+      ...chef,
+      recent_recipe: recentRecipesMap[chef.id] || 'No recent recipes available',
+    }));
+});
+
+
+console.log("Users:", props.users);
+console.log("Roles:", props.roles);
+console.log("Recent",props.recentRecipes);  // Check if this contains data
 
 // Map statistics to dashboard cards
 const computedStatistics = computed(() => [
   { title: "Total Users", value: props.statistics[0].total_users, icon: UserIcon },
-  { title: "Total Recipes", value: props.statistics[0].total_recipes, icon: BookOpenIcon },
-  { title: "Total Chefs", value: props.statistics[0].total_chefs, icon: UserGroupIcon },
   { title: "Total Admins", value: props.statistics[0].total_admins, icon: ShieldCheckIcon },
+  { title: "Total Chefs", value: props.statistics[0].total_chefs, icon: UserGroupIcon },
+  { title: "Total Recipes", value: props.statistics[0].total_recipes, icon: BookOpenIcon },
 ]);
 
 const activityLogs = ref(props.activityLogs);
@@ -440,6 +499,10 @@ const groupedUsers = computed(() => {
     }
   });
   return grouped;
+});
+
+onMounted(() => {
+  console.log("Grouped Chefs:", groupedUsers.value.chef);
 });
 
 // Methods
@@ -547,7 +610,8 @@ const submitUser = () => {
   } else {
     router.post(route("admin.addUser"), userForm.value, {
       onSuccess: () => {
-        props.users.push(userForm.value);
+        const updatedUsers = [...props.users, { ...userForm.value }];
+        props.users = updatedUsers;
         closeModal();
         showAlert("User added successfully!", "success");
       },
