@@ -73,7 +73,7 @@
                 </div>
                 <button @click="viewRecipeDetails(recipe)" 
                         class="w-full bg-indigo-600 text-white px-4 py-2 rounded-md transition duration-300 ease-in-out hover:bg-indigo-700 transform hover:-translate-y-1">
-                  View Recipe
+                  View more details
                 </button>
               </div>
             </div>
@@ -125,6 +125,20 @@
                     <span :style="{ color: getCategoryColor(selectedRecipe?.category_id).text, backgroundColor: getCategoryColor(selectedRecipe?.category_id).bg }" class="px-3 py-1 rounded-full text-sm font-medium">
                       {{ getCategoryName(selectedRecipe?.category_id) }}
                     </span>
+                  </div>
+                  <div class="mb-4 p-4 bg-gray-100 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-2">Chef</h3>
+                    <div class="flex items-center">
+                      <img 
+                        :src="`https://ui-avatars.com/api/?name=${getUser(selectedRecipe?.user_id)}&background=random`" 
+                        :alt="getUser(selectedRecipe?.user_id)"
+                        class="w-10 h-10 rounded-full mr-3"
+                      />
+                      <div>
+                        <p class="font-medium text-gray-800">{{ getUser(selectedRecipe?.user_id) }}</p>
+                        <p class="text-sm text-gray-600">Created on {{ formatDate(selectedRecipe?.created_at) }}</p>
+                      </div>
+                    </div>
                   </div>
                   <div class="space-y-4 max-h-[calc(100vh-24rem)] overflow-y-auto pr-4 custom-scrollbar">
                     <div>
@@ -189,17 +203,25 @@ const props = defineProps({
   roles: {
     type: Array,
     default: () => []
-  }
+  },
+  users: {
+    type: Array,
+    default: () => []
+  },
 });
 
+const getUser = (user_id) => {
+  const user = props.users.find(u => u.id === user_id);
+  return user ? user.name : "Unknown";
+};
+
 // Reactive data
+const roles = ref(props.roles);
 const recipes = ref(props.recipes);
 const categories = ref(props.categories);
 const searchQuery = ref('');
 const selectedCategory = ref('');
 const selectedRecipe = ref(null);
-
-// Navigation items
 
 // Computed properties
 const filteredRecipes = computed(() => {
@@ -260,8 +282,6 @@ const getCategoryColor = (categoryId) => {
         return { text: '#FF69B4', bg: '#FCE4EC' }; // Pink
       case 'beverage':
         return { text: '#00CED1', bg: '#E0F7FA' }; // Turquoise
-      case 'side dish':
-        return { text: '#32CD32', bg: '#F1F8E9' }; // Lime Green
       default:
         return { text: '#000000', bg: '#FFFFFF' };
     }
@@ -284,6 +304,11 @@ const viewRecipeDetails = (recipe) => {
 
 const closeRecipeDetails = () => {
   selectedRecipe.value = null;
+};
+
+const formatDate = (dateString) => {
+  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  return new Date(dateString).toLocaleDateString(undefined, options);
 };
 
 // Lifecycle hooks

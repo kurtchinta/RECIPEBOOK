@@ -20,6 +20,12 @@ class AdminController extends Controller
     {
     // Fetch data from the STATISTICS view
     $statistics = DB::select('SELECT * FROM STATISTICS');
+    $recipes = DB::select('SELECT * FROM get_recipes()');
+    $recentRecipes = DB::select('
+        SELECT users.id AS user_id, get_recent_recipe(users.id::bigint) AS recent_recipe 
+        FROM users 
+        WHERE users.role_id = 2
+    ');
 
     // Fetch user and role information
     $users = User::with('role')->get();
@@ -30,7 +36,37 @@ class AdminController extends Controller
         'statistics' => $statistics,
         'users' => $users,
         'roles' => $roles,
+        'recipes' => $recipes,
+        'recentRecipes' => $recentRecipes,
     ]);
+    }
+
+
+    public function deleteRecipe($id)
+    {
+        \Log::info("Deleting recipe with ID: $id"); // Log the ID
+        
+        $recipe = DB::table('recipes')->where('id', $id)->first();
+        
+        if ($recipe) {
+            DB::table('recipes')->where('id', $id)->delete();
+            return redirect()->route('admin')->with('success', 'Recipe deleted successfully.');
+        }
+        
+        return redirect()->route('admin')->with('error', 'Recipe not found.');
+    }
+    
+    
+
+    public function users()
+    {
+        $users = User::with('role')->get();
+        $roles = DB::table('roles')->get();
+
+        return Inertia::render('Admin', [
+            'users' => $users,
+            'roles' => $roles,
+        ]);
     }
 
     /*------------------------

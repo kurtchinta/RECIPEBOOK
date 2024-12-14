@@ -69,13 +69,13 @@ class ChefController extends Controller
             return redirect()->route('chef.dashboard')->with('error', 'Failed to add the recipe. Please try again.');
         }
     }
-    
+      
     public function updateRecipe(Request $request, Recipe $recipe)
     {
         if ($recipe->user_id !== Auth::id()) {
             return redirect()->route('chef.dashboard')->with('error', 'You are not authorized to edit this recipe.');
         }
-
+    
         $validated = $request->validate([
             'recipe_name' => 'required|string|max:255',
             'description' => 'required|string',
@@ -85,15 +85,16 @@ class ChefController extends Controller
             'servings' => 'required|integer|min:1',
             'category_id' => 'required|exists:categories,id',
         ]);
-
+    
         try {
-            $recipe->update($validated);
+            $recipe->update($validated);  // Update the existing recipe in the DB
             return redirect()->route('chef.dashboard')->with('success', 'Recipe updated successfully!');
         } catch (\Exception $e) {
             \Log::error('Failed to update recipe: ' . $e->getMessage());
             return redirect()->route('chef.dashboard')->with('error', 'Failed to update the recipe. Please try again.');
         }
     }
+
 
     public function editRecipe($id)
     {

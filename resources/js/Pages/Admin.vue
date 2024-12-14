@@ -26,26 +26,58 @@
         <div class="container mx-auto px-6 py-8">
           <h1 class="text-4xl font-bold text-gray-800 mb-8">Admin Dashboard</h1>
           
-   <!-- Dashboard Stats -->
-   <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-    <div
-      v-for="stat in computedStatistics"
-      :key="stat.title"
-      class="bg-white p-6 rounded-xl shadow-lg transform hover:scale-105 hover:shadow-xl transition-all duration-300"
-    >
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-semibold text-gray-700">{{ stat.title }}</h3>
-        <component :is="stat.icon" class="h-8 w-8 text-gray-500" />
+          <!-- Dashboard Stats -->
+          <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <div
+              v-for="stat in computedStatistics"
+              :key="stat.title"
+              class="bg-white p-6 rounded-xl shadow-lg transform hover:scale-105 hover:shadow-xl transition-all duration-300"
+            >
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-700">{{ stat.title }}</h3>
+                <component :is="stat.icon" class="h-8 w-8 text-gray-500" />
+              </div>
+              <p class="text-4xl font-extrabold text-gray-800">{{ stat.value }}</p>
+            </div>
+          </section>
+
+          <!-- Chef Recent Recipe -->
+<section id="recent-recipes" class="mb-12">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-3xl font-bold text-gray-800">Recent Chef Recipe</h2>
+    </div>
+    <div class="bg-white rounded-xl shadow-md overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th class="px-6 py-3">Chef Name</th>
+              <th class="px-6 py-3">Recent Recipe</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <tr v-for="chef in filteredChefs" :key="chef.id" class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0 h-10 w-10">
+                    <img class="h-10 w-10 rounded-full" :src="`https://ui-avatars.com/api/?name=${chef.name}&background=random`" :alt="chef.name" />
+                  </div>
+                  <div class="ml-4">
+                    <div class="text-sm font-medium text-gray-900">{{ chef.name }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ chef.recent_recipe }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <p class="text-4xl font-extrabold text-gray-800">{{ stat.value }}</p>
     </div>
   </section>
 
-
-
-
-
-      <!-- User Management -->
+          <!-- User Management -->
           <section id="users" class="mb-12">
             <div class="flex justify-between items-center mb-6">
               <h2 class="text-3xl font-bold text-gray-800">User Management</h2>
@@ -121,33 +153,30 @@
             </div>
             <div class="bg-white rounded-xl shadow-md overflow-hidden">
               <div class="overflow-x-auto">
-                <table class="w-full">
-                  <thead>
-                    <tr class="bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      <th class="px-6 py-3">Title</th>
-                      <th class="px-6 py-3">Chef</th>
-                      <th class="px-6 py-3">Created At</th>
-                      <th class="px-6 py-3">Actions</th>
+                <table class="min-w-full divide-y divide-gray-200">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recipe Name</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Chef</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Created</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
-                  <tbody class="divide-y divide-gray-200">
-                    <tr v-for="recipe in recipes" :key="recipe.id" class="hover:bg-gray-50">
+                  <tbody class="bg-white divide-y divide-gray-200">
+                    <tr v-for="recipe in recipes" :key="recipe.recipe_id" class="hover:bg-gray-50">
+                      <td class="px-6 py-4 whitespace-nowrap">{{ recipe.recipe_name }}</td>
                       <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                          <div class="flex-shrink-0 h-10 w-10">
-                            <img class="h-10 w-10 rounded-full object-cover" :src="recipe.image || '/placeholder.svg'" :alt="recipe.title" />
-                          </div>
-                          <div class="ml-4">
-                            <div class="text-sm font-medium text-gray-900">{{ recipe.title }}</div>
-                          </div>
-                        </div>
+                        <span :class="getCategoryClass(recipe.category_name)" class="px-3 py-1 rounded-full text-xs font-medium">
+                          {{ recipe.category_name }}
+                        </span>
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">{{ recipe.chef_name }}</td>
                       <td class="px-6 py-4 whitespace-nowrap">{{ formatDate(recipe.created_at) }}</td>
                       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button
-                          @click="deleteRecipe(recipe.id)"
-                          class="text-red-600 hover:text-red-900 transition-colors duration-300"
+                          @click="deleteRecipe(recipe.recipe_id)"
+                          class="text-red-600 hover:text-red-900 transition-colors ms-5 duration-300"
                         >
                           <TrashIcon class="h-5 w-5" />
                         </button>
@@ -317,6 +346,7 @@
                       required
                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
                     >
+                      <option value="" disabled>Select a role</option>
                       <option v-for="role in roles" :key="role.id" :value="role.id">{{ role.role_user }}</option>
                     </select>
                   </div>
@@ -385,8 +415,57 @@ const props = defineProps({
   roles: {
     type: Array,
     default: () => [],
+  },
+
+  recipes: {
+    type: Array,
+    default: () => [], 
+  },
+  recentRecipes: {
+    type: Array,
+    default: () => [], 
   }
 });
+
+const filteredChefs = computed(() => {
+  // First, map recentRecipes by user_id for easier lookup
+  const recentRecipesMap = props.recentRecipes.reduce((map, recipe) => {
+    map[recipe.user_id] = recipe.recent_recipe;
+    return map;
+  }, {});
+
+  // Filter chefs and add the recent recipe to each chef
+  return props.users
+    .filter(user => user.role.id === 2) // Assuming '2' is the chef role ID
+    .map(chef => ({
+      ...chef,
+      recent_recipe: recentRecipesMap[chef.id] || 'No recent recipes available',
+    }));
+});
+
+const recipes = ref(props.recipes); // Initialize the recipes from props
+
+// Delete a recipe
+const deleteRecipe = (id) => {
+  showConfirmModal.value = true;
+  confirmModalConfig.value = {
+    title: 'Delete Recipe',
+    message: 'Are you sure you want to delete this recipe?',
+    onConfirm: () => {
+      // Update the URL to match the correct route for deletion
+      router.delete(`/admin/recipes/${id}`, {
+        onSuccess: () => {
+          recipes.value = recipes.value.filter(recipe => recipe.recipe_id !== id);
+          showAlert("Recipe deleted successfully!", "success");
+        },
+        onError: (error) => {
+          console.error('Error deleting recipe:', error);
+          showAlert('Failed to delete recipe. Please try again.', "error");
+        },
+      });
+    }
+  };
+};
 
 // Map statistics to dashboard cards
 const computedStatistics = computed(() => [
@@ -424,7 +503,7 @@ const navItems = [
 ];
 
 const sortedUsers = computed(() =>
-  users.value.slice().sort((a, b) => a.role_id - b.role_id)
+  props.users.slice().sort((a, b) => a.role_id - b.role_id)
 );
 
 const groupedUsers = computed(() => {
@@ -448,7 +527,10 @@ const getRole = (role_id) => {
   return role ? role.role_user : "Unknown";
 };
 
-const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+};
 
 const closeConfirmModal = () => {
   showConfirmModal.value = false;
@@ -467,12 +549,8 @@ const confirmAction = () => {
 };
 
 const showAlert = (message, type) => {
-  showConfirmModal.value = true;
-  confirmModalConfig.value = {
-    title: type.charAt(0).toUpperCase() + type.slice(1),
-    message: message,
-    onConfirm: closeConfirmModal
-  };
+  // Implement your alert logic here
+  console.log(`${type}: ${message}`);
 };
 
 const deleteUser = (userId) => {
@@ -547,7 +625,8 @@ const submitUser = () => {
   } else {
     router.post(route("admin.addUser"), userForm.value, {
       onSuccess: () => {
-        props.users.push(userForm.value);
+        const updatedUsers = [...props.users, { ...userForm.value }];
+        props.users = updatedUsers;
         closeModal();
         showAlert("User added successfully!", "success");
       },
@@ -562,26 +641,6 @@ const closeModal = () => {
   showAddUserModal.value = false;
   editingUser.value = null;
   userForm.value = { id: "", name: "", email: "", password: "", role_id: "" };
-};
-
-const deleteRecipe = (recipeId) => {
-  showConfirmModal.value = true;
-  confirmModalConfig.value = {
-    title: 'Delete Recipe',
-    message: 'Are you sure you want to delete this recipe?',
-    onConfirm: () => {
-      router.delete(route("admin.deleteRecipe", { recipe: recipeId }), {
-        onSuccess: () => {
-          recipes.value = recipes.value.filter((recipe) => recipe.id !== recipeId);
-          showAlert("Recipe deleted successfully!", "success");
-        },
-        onError: (error) => {
-          console.error("Error deleting recipe:", error);
-          showAlert("Error: Unable to delete the recipe.", "error");
-        },
-      });
-    }
-  };
 };
 
 const refreshActivityLogs = () => {
@@ -607,6 +666,21 @@ const getActivityIcon = (type) => {
       return BookOpenIcon;
     default:
       return ClockIcon;
+  }
+};
+
+const getCategoryClass = (category) => {
+  switch (category.toLowerCase()) {
+    case 'main course':
+      return 'bg-orange-100 text-orange-800';
+    case 'appetizer':
+      return 'bg-yellow-100 text-yellow-800';
+    case 'dessert':
+      return 'bg-pink-100 text-pink-800';
+    case 'beverages':
+      return 'bg-blue-100 text-blue-800';
+    default:
+      return 'bg-gray-100 text-gray-800';
   }
 };
 </script>
