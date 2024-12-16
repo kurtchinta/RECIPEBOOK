@@ -7,6 +7,9 @@
 
         <title inertia>{{ config('app.name', 'RecipeBook') }}</title>
 
+        <!-- Favicon -->
+        <link rel="icon" type="image/png" href="{{ asset('logo.png') }}"> <!--WILL CHANGE LATER-->
+
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
@@ -21,12 +24,12 @@
     </body>
     <script type="module">
         import { Ziggy } from '@ziggy-js/ziggy';
-    import { ZiggyVue } from 'ziggy-vue';
-    import { createApp } from 'vue';
-    import App from './App.vue';
-    
-    const app = createApp(App);
-    app.use(ZiggyVue, Ziggy);
-    app.mount('#app');
+        import { ZiggyVue } from 'ziggy-vue';
+        import { createApp } from 'vue';
+        import App from './App.vue';
+
+        const app = createApp(App);
+        app.use(ZiggyVue, Ziggy);
+        app.mount('#app');
     </script>
 </html>

@@ -1,9 +1,9 @@
 <template>
-  <Head title="Recipe Book Manager" />
+  <Head title="Admin Dashboard" />
   <AuthenticatedLayout>
-    <div class="flex h-screen bg-gray-100">
+    <div class="flex flex-col lg:flex-row min-h-screen bg-gray-100">
       <!-- Sidebar -->
-      <aside class="w-64 bg-white shadow-md">
+      <aside class="w-full lg:w-64 bg-white shadow-md">
         <div class="p-6 flex flex-col items-center">
           <img :src="`https://ui-avatars.com/api/?name=${$page.props.auth.user.name}&background=random`" alt="User Avatar" class="w-24 h-24 rounded-full mb-4 border-4 border-green-500 shadow-lg" />
           <h2 class="text-xl font-bold text-gray-800">{{ $page.props.auth.user.name }}</h2>
@@ -22,12 +22,12 @@
       </aside>
 
       <!-- Main Content -->
-      <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
-        <div class="container mx-auto px-6 py-8">
+      <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 custom-scrollbar">
+        <div class="container mx-auto px-4 lg:px-6 py-8">
           <h1 class="text-4xl font-bold text-gray-800 mb-8">Admin Dashboard</h1>
           
           <!-- Dashboard Stats -->
-          <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-12">
             <div
               v-for="stat in computedStatistics"
               :key="stat.title"
@@ -42,47 +42,47 @@
           </section>
 
           <!-- Chef Recent Recipe -->
-<section id="recent-recipes" class="mb-12">
-    <div class="flex justify-between items-center mb-6">
-      <h2 class="text-3xl font-bold text-gray-800">Recent Chef Recipe</h2>
-    </div>
-    <div class="bg-white rounded-xl shadow-md overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full">
-          <thead>
-            <tr class="bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-              <th class="px-6 py-3">Chef Name</th>
-              <th class="px-6 py-3">Recent Recipe</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-200">
-            <tr v-for="chef in filteredChefs" :key="chef.id" class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center">
-                  <div class="flex-shrink-0 h-10 w-10">
-                    <img class="h-10 w-10 rounded-full" :src="`https://ui-avatars.com/api/?name=${chef.name}&background=random`" :alt="chef.name" />
-                  </div>
-                  <div class="ml-4">
-                    <div class="text-sm font-medium text-gray-900">{{ chef.name }}</div>
-                  </div>
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {{ chef.recent_recipe }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
+          <section id="recent-recipes" class="mb-12">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-3xl font-bold text-gray-800">Recent Chef Recipe</h2>
+            </div>
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead>
+                    <tr class="bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <th class="px-6 py-3">Chef Name</th>
+                      <th class="px-6 py-3">Recent Recipe</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-200">
+                    <tr v-for="chef in filteredChefs" :key="chef.id" class="hover:bg-gray-50">
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                          <div class="flex-shrink-0 h-10 w-10">
+                            <img class="h-10 w-10 rounded-full" :src="`https://ui-avatars.com/api/?name=${chef.name}&background=random`" :alt="chef.name" />
+                          </div>
+                          <div class="ml-4">
+                            <div class="text-sm font-medium text-gray-900">{{ chef.name }}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ chef.recent_recipe }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
 
           <!-- User Management -->
           <section id="users" class="mb-12">
-            <div class="flex justify-between items-center mb-6">
-              <h2 class="text-3xl font-bold text-gray-800">User Management</h2>
+            <div class="flex flex-col sm:flex-row justify-between items-center mb-6">
+              <h2 class="text-3xl font-bold text-gray-800 mb-4 sm:mb-0">User Management</h2>
               <button @click="showAddUserModal = true" 
-                      class="bg-blue-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-blue-700 transition-colors duration-300 flex items-center shadow-lg">
+                      class="w-full sm:w-auto bg-blue-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-blue-700 transition-colors duration-300 flex items-center justify-center shadow-lg">
                 <PlusIcon class="h-5 w-5 mr-2" />
                 Add User
               </button>
@@ -133,7 +133,7 @@
                         </button>
                         <button
                           v-if="user.role_id !== 1"
-                          @click="deleteUser(user.id)"
+                          @click="deleteUser(user)"
                           class="text-red-600 hover:text-red-900 transition-colors duration-300"
                         >
                           <TrashIcon class="h-5 w-5" />
@@ -164,7 +164,7 @@
                     </tr>
                   </thead>
                   <tbody class="bg-white divide-y divide-gray-200">
-                    <tr v-for="recipe in recipes" :key="recipe.recipe_id" class="hover:bg-gray-50">
+                    <tr v-for="recipe in sortedRecipes" :key="recipe.recipe_id" class="hover:bg-gray-50">
                       <td class="px-6 py-4 whitespace-nowrap">{{ recipe.recipe_name }}</td>
                       <td class="px-6 py-4 whitespace-nowrap">
                         <span :class="getCategoryClass(recipe.category_name)" class="px-3 py-1 rounded-full text-xs font-medium">
@@ -175,7 +175,7 @@
                       <td class="px-6 py-4 whitespace-nowrap">{{ formatDate(recipe.created_at) }}</td>
                       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button
-                          @click="deleteRecipe(recipe.recipe_id)"
+                          @click="deleteRecipe(recipe)"
                           class="text-red-600 hover:text-red-900 transition-colors ms-5 duration-300"
                         >
                           <TrashIcon class="h-5 w-5" />
@@ -374,6 +374,60 @@
       </Dialog>
     </TransitionRoot>
   </AuthenticatedLayout>
+  
+  <!-- Creative Alert -->
+  <TransitionRoot appear :show="showCreativeAlert" as="template">
+    <Dialog as="div" @close="closeCreativeAlert" class="relative z-50">
+      <TransitionChild
+        as="template"
+        enter="duration-300 ease-out"
+        enter-from="opacity-0"
+        enter-to="opacity-100"
+        leave="duration-200 ease-in"
+        leave-from="opacity-100"
+        leave-to="opacity-0"
+      >
+        <div class="fixed inset-0 bg-black bg-opacity-25" />
+      </TransitionChild>
+
+      <div class="fixed inset-0 overflow-y-auto">
+        <div class="flex min-h-full items-center justify-center p-4 text-center">
+          <TransitionChild
+            as="template"
+            enter="duration-300 ease-out"
+            enter-from="opacity-0 scale-95"
+            enter-to="opacity-100 scale-100"
+            leave="duration-200 ease-in"
+            leave-from="opacity-100 scale-100"
+            leave-to="opacity-0 scale-95"
+          >
+            <DialogPanel class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+              <div class="flex items-center justify-center mb-4">
+                <div class="bg-green-100 rounded-full p-3">
+                  <CheckIcon class="h-6 w-6 text-green-600" />
+                </div>
+              </div>
+              <DialogTitle as="h3" class="text-lg font-medium leading-6 text-gray-900 text-center mb-2">
+                {{ creativeAlertConfig.title }}
+              </DialogTitle>
+              <p class="text-sm text-gray-500 text-center mb-4">
+                {{ creativeAlertConfig.message }}
+              </p>
+              <div class="mt-4 flex justify-center">
+                <button
+                  type="button"
+                  class="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-colors duration-300"
+                  @click="closeCreativeAlert"
+                >
+                  Got it, thanks!
+                </button>
+              </div>
+            </DialogPanel>
+          </TransitionChild>
+        </div>
+      </div>
+    </Dialog>
+  </TransitionRoot>
 </template>
 
 <script setup>
@@ -394,9 +448,9 @@ import {
   UserIcon,
   ShieldCheckIcon,
   BookOpenIcon,
+  CheckIcon,
 } from '@heroicons/vue/24/solid';
 
-// Define the props that are passed from the backend
 const props = defineProps({
   statistics: {
     type: Array,
@@ -406,7 +460,6 @@ const props = defineProps({
       total_chefs: 0,
       total_admins: 0,
     }),
-    
   },
   users: {
     type: Array,
@@ -416,7 +469,6 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
-
   recipes: {
     type: Array,
     default: () => [], 
@@ -424,52 +476,65 @@ const props = defineProps({
   recentRecipes: {
     type: Array,
     default: () => [], 
+  },
+  activityLogs: {
+    type: Array,
+    default: () => [],
   }
 });
 
 const filteredChefs = computed(() => {
-  // First, map recentRecipes by user_id for easier lookup
   const recentRecipesMap = props.recentRecipes.reduce((map, recipe) => {
     map[recipe.user_id] = recipe.recent_recipe;
     return map;
   }, {});
 
-  // Filter chefs and add the recent recipe to each chef
   return props.users
-    .filter(user => user.role.id === 2) // Assuming '2' is the chef role ID
+    .filter(user => user.role.id === 2)
     .map(chef => ({
       ...chef,
       recent_recipe: recentRecipesMap[chef.id] || 'No recent recipes available',
     }));
 });
 
-const recipes = ref(props.recipes); // Initialize the recipes from props
+const recipes = ref(props.recipes);
 
-// Delete a recipe
-const deleteRecipe = (id) => {
+const sortedRecipes = computed(() => {
+  return [...recipes.value].sort((a, b) => a.category_id - b.category_id);
+});
+
+const deleteRecipe = (recipe) => {
   showConfirmModal.value = true;
   confirmModalConfig.value = {
     title: 'Delete Recipe',
-    message: 'Are you sure you want to delete this recipe?',
+    message: `Are you sure you want to delete the recipe "${recipe.recipe_name}"?`,
     onConfirm: () => {
-      // Update the URL to match the correct route for deletion
-      router.delete(`/admin/recipes/${id}`, {
+      router.delete(`/admin/recipes/${recipe.recipe_id}`, {
+        preserveState: true,
+        preserveScroll: true,
         onSuccess: () => {
-          recipes.value = recipes.value.filter(recipe => recipe.recipe_id !== id);
-          showAlert("Recipe deleted successfully!", "success");
+          recipes.value = recipes.value.filter(r => r.recipe_id !== recipe.recipe_id);
+          showCreativeAlert.value = true;
+          creativeAlertConfig.value = {
+            title: 'Recipe Deleted Successfully!',
+            message: `The recipe "${recipe.recipe_name}" has been deleted.`
+          };
         },
         onError: (error) => {
           console.error('Error deleting recipe:', error);
-          showAlert('Failed to delete recipe. Please try again.', "error");
+          showCreativeAlert.value = true;
+          creativeAlertConfig.value = {
+            title: 'Error',
+            message: 'Failed to delete recipe. Please try again.'
+          };
         },
       });
     }
   };
 };
 
-// Map statistics to dashboard cards
 const computedStatistics = computed(() => [
-  { title: "Total Users", value: props.statistics[0].total_users, icon: UserIcon },
+  { title: "Total Users", value: props.statistics[0].total_users, icon: UserGroupIcon },
   { title: "Total Recipes", value: props.statistics[0].total_recipes, icon: BookOpenIcon },
   { title: "Total Chefs", value: props.statistics[0].total_chefs, icon: UserGroupIcon },
   { title: "Total Admins", value: props.statistics[0].total_admins, icon: ShieldCheckIcon },
@@ -478,6 +543,11 @@ const computedStatistics = computed(() => [
 const activityLogs = ref(props.activityLogs);
 const showAddUserModal = ref(false);
 const editingUser = ref(null);
+const showCreativeAlert = ref(false);
+const creativeAlertConfig = ref({
+  title: '',
+  message: '',
+});
 
 const userForm = ref({
   name: '',
@@ -486,7 +556,6 @@ const userForm = ref({
   role_id: null,
 });
 
-// Confirmation modal
 const showConfirmModal = ref(false);
 const confirmModalConfig = ref({
   title: '',
@@ -494,17 +563,12 @@ const confirmModalConfig = ref({
   onConfirm: null
 });
 
-// Navigation items
 const navItems = [
   { name: 'Dashboard', href: '#statistics', icon: ChartBarIcon },
   { name: 'Users', href: '#users', icon: UserGroupIcon },
   { name: 'Recipes', href: '#recipes', icon: BookOpenIcon },
   { name: 'Activity', href: '#activity', icon: ClockIcon },
 ];
-
-const sortedUsers = computed(() =>
-  props.users.slice().sort((a, b) => a.role_id - b.role_id)
-);
 
 const groupedUsers = computed(() => {
   const grouped = {
@@ -521,7 +585,6 @@ const groupedUsers = computed(() => {
   return grouped;
 });
 
-// Methods
 const getRole = (role_id) => {
   const role = props.roles.find(r => r.id === role_id);
   return role ? role.role_user : "Unknown";
@@ -529,8 +592,12 @@ const getRole = (role_id) => {
 
 const formatDate = (dateString) => {
   const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };
+
 
 const closeConfirmModal = () => {
   showConfirmModal.value = false;
@@ -548,25 +615,30 @@ const confirmAction = () => {
   closeConfirmModal();
 };
 
-const showAlert = (message, type) => {
-  // Implement your alert logic here
-  console.log(`${type}: ${message}`);
-};
-
-const deleteUser = (userId) => {
+const deleteUser = (user) => {
   showConfirmModal.value = true;
   confirmModalConfig.value = {
     title: 'Delete User',
-    message: 'Are you sure you want to delete this user?',
+    message: `Are you sure you want to delete the user "${user.name}"?`,
     onConfirm: () => {
-      router.delete(route("admin.deleteUser", { user: userId }), {
+      router.delete(route("admin.deleteUser", { user: user.id }), {
+        preserveState: true,
+        preserveScroll: true,
         onSuccess: () => {
-          props.users = props.users.filter((user) => user.id !== userId);
-          showAlert("User deleted successfully!", "success");
+          props.users = props.users.filter((u) => u.id !== user.id);
+          showCreativeAlert.value = true;
+          creativeAlertConfig.value = {
+            title: 'User Deleted Successfully!',
+            message: `${getRole(user.role_id)} "${user.name}" has been deleted.`
+          };
         },
         onError: (error) => {
           console.error("Error deleting user:", error);
-          showAlert("Error: Unable to delete the user.", "error");
+          showCreativeAlert.value = true;
+          creativeAlertConfig.value = {
+            title: 'Error',
+            message: "Unable to delete the user. Please try again."
+          };
         },
       });
     }
@@ -575,25 +647,22 @@ const deleteUser = (userId) => {
 
 const editUser = (user) => {
   if (getRole(user.role_id) === "Admin") {
-    showAlert("Admin roles cannot be edited or demoted.", "warning");
+    showCreativeAlert.value = true;
+    creativeAlertConfig.value = {
+      title: 'Cannot Edit Admin',
+      message: "Admin roles cannot be edited or demoted."
+    };
     return;
   }
 
-  showConfirmModal.value = true;
-  confirmModalConfig.value = {
-    title: 'Edit User',
-    message: 'Are you sure you want to edit this user?',
-    onConfirm: () => {
-      showAddUserModal.value = true;
-      editingUser.value = user;
-      userForm.value = {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role_id: user.role_id,
-        password: ""
-      };
-    }
+  showAddUserModal.value = true;
+  editingUser.value = user;
+  userForm.value = {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role_id: user.role_id,
+    password: ""
   };
 };
 
@@ -603,35 +672,72 @@ const submitUser = () => {
       getRole(editingUser.value.role_id) === "Admin" &&
       userForm.value.role_id !== editingUser.value.role_id
     ) {
-      showAlert("Once promoted to Admin, users cannot be demoted.", "warning");
+      showCreativeAlert.value = true;
+      creativeAlertConfig.value = {
+        title: 'Cannot Demote Admin',
+        message: "Once promoted to Admin, users cannot be demoted."
+      };
       return;
     }
 
-    router.put(route("admin.updateUserRole", { user: userForm.value.id }), {
-      role_id: userForm.value.role_id,
-    }, {
-      onSuccess: () => {
-        const userIndex = props.users.findIndex((u) => u.id === userForm.value.id);
-        if (userIndex > -1) {
-          props.users[userIndex] = { ...userForm.value };
-        }
-        closeModal();
-        showAlert("User updated successfully!", "success");
-      },
-      onError: () => {
-        showAlert("There was an error updating the user.", "error");
-      },
-    });
+    showConfirmModal.value = true;
+    confirmModalConfig.value = {
+      title: 'Update User Role',
+      message: `Are you sure you want to update ${editingUser.value.name}'s role to ${getRole(userForm.value.role_id)}?`,
+      onConfirm: () => {
+        router.put(route("admin.updateUserRole", { user: userForm.value.id }), {
+          role_id: userForm.value.role_id,
+        }, {
+          preserveState: true,
+          preserveScroll: true,
+          onSuccess: (response) => {
+            const updatedUser = response.data.user;
+            const userIndex = props.users.findIndex((u) => u.id === updatedUser.id);
+            if (userIndex > -1) {
+              props.users[userIndex] = updatedUser;
+            }
+            closeModal();
+            showCreativeAlert.value = true;
+            creativeAlertConfig.value = {
+              title: 'User Updated',
+              message: `${updatedUser.name} has been successfully updated to ${getRole(updatedUser.role_id)}.`
+            };
+            
+            // Check if a redirect URL is provided in the response
+            if (response.data.redirect) {
+              window.location.href = response.data.redirect;
+            }
+          },
+          onError: () => {
+            showCreativeAlert.value = true;
+            creativeAlertConfig.value = {
+              title: 'Error',
+              message: "There was an error updating the user. Please try again."
+            };
+          },
+        });
+      }
+    };
   } else {
     router.post(route("admin.addUser"), userForm.value, {
+      preserveState: true,
+      preserveScroll: true,
       onSuccess: () => {
         const updatedUsers = [...props.users, { ...userForm.value }];
         props.users = updatedUsers;
         closeModal();
-        showAlert("User added successfully!", "success");
+        showCreativeAlert.value = true;
+        creativeAlertConfig.value = {
+          title: 'User Added Successfully!',
+          message: `New user has been added.`
+        };
       },
       onError: (errors) => {
-        showAlert("There was an error adding the user: " + Object.values(errors).join(", "), "error");
+        showCreativeAlert.value = true;
+        creativeAlertConfig.value = {
+          title: 'Error',
+          message: "There was an error adding the user: " + Object.values(errors).join(", ")
+        };
       },
     });
   }
@@ -649,11 +755,19 @@ const refreshActivityLogs = () => {
     preserveScroll: true,
     onSuccess: (page) => {
       activityLogs.value = page.props.activityLogs;
-      showAlert("Activity logs refreshed successfully!", "success");
+      showCreativeAlert.value = true;
+      creativeAlertConfig.value = {
+        title: 'Logs Refreshed',
+        message: "Activity logs have been successfully refreshed."
+      };
     },
     onError: (error) => {
       console.error("Error refreshing activity logs:", error);
-      showAlert("Error: Unable to refresh activity logs.", "error");
+      showCreativeAlert.value = true;
+      creativeAlertConfig.value = {
+        title: 'Error',
+        message: "Unable to refresh activity logs. Please try again."
+      };
     },
   });
 };
@@ -682,6 +796,10 @@ const getCategoryClass = (category) => {
     default:
       return 'bg-gray-100 text-gray-800';
   }
+};
+
+const closeCreativeAlert = () => {
+  showCreativeAlert.value = false;
 };
 </script>
 
