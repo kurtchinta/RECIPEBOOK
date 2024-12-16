@@ -77,7 +77,7 @@ class AdminController extends Controller
      * Update a user's role.
      */
     
-    public function updateUserRole(Request $request, $userId)
+     public function updateRole(Request $request, $userId)
     {
         $user = DB::table('users')->where('id', $userId)->first();
 
@@ -100,44 +100,57 @@ class AdminController extends Controller
         return back()->with('message', 'User role updated successfully!');
     }
 
+
     /**
      * Delete a user from the system.
      */
 
-    public function deleteUser(User $user)
-    {
-        if ($user->role_id === 1) {
-            return redirect()->back()->with('error', 'Admin users cannot be deleted.');
-        }
-
-        $user->delete();
-
-        return redirect()->back()->with('message', 'User deleted successfully.');
-    }
+     public function deleteUser($id)
+     {
+         // Find the user by ID using DB facade
+         $user = DB::table('users')->where('id', $id)->first();
+     
+         // Check if user exists
+         if (!$user) {
+             return redirect()->back()->with('error', 'User not found.');
+         }
+     
+         // Prevent deleting admin users
+         if ($user->role_id === 1) {
+             return redirect()->back()->with('error', 'Admin users cannot be deleted.');
+         }
+     
+         // Delete the user from the database
+         DB::table('users')->where('id', $id)->delete();
+     
+         return redirect()->back()->with('message', 'User deleted successfully.');
+     }
     
     /**
      * Add a new user to the system.
      */
     public function addUser(Request $request)
-    {
-        // Validate the incoming request data, including the dynamic role_id
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8',
-            'role_id' => 'required|exists:roles,id',  // Ensure role_id exists in roles table
-        ]);
+{
+    // Validate the incoming request data, including the dynamic role_id
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:users,email',
+        'password' => 'required|string|min:8',
+        'role_id' => 'required|exists:roles,id',  // Ensure role_id exists in roles table
+    ]);
 
-        // Create a new user with the provided role_id
-        User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => bcrypt($validated['password']),
-            'role_id' => $validated['role_id'],  // Set role dynamically based on the selected value
-        ]);
+    // Insert the new user directly into the users table
+    DB::table('users')->insert([
+        'name' => $validated['name'],
+        'email' => $validated['email'],
+        'password' => bcrypt($validated['password']),
+        'role_id' => $validated['role_id'],  // Set role dynamically based on the selected value
+        'created_at' => now(),  // Set the created_at timestamp
+        'updated_at' => now(),  // Set the updated_at timestamp
+    ]);
 
-        return back()->with('message', 'User added successfully with the selected role!');
-    }
+    return back()->with('message', 'User added successfully with the selected role!');
+}
 
     /**
      * Get recent recipes created by a specific user.

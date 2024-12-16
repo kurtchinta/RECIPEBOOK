@@ -403,8 +403,10 @@
           >
             <DialogPanel class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
               <div class="flex items-center justify-center mb-4">
-                <div class="bg-green-100 rounded-full p-3">
-                  <CheckIcon class="h-6 w-6 text-green-600" />
+                <div :class="creativeAlertConfig.isError ? 'bg-red-100' : 'bg-green-100'" class="rounded-full p-3">
+                  <component :is="creativeAlertConfig.isError ? XMarkIcon : CheckIcon" 
+                             :class="creativeAlertConfig.isError ? 'text-red-600' : 'text-green-600'"
+                             class="h-6 w-6" />
                 </div>
               </div>
               <DialogTitle as="h3" class="text-lg font-medium leading-6 text-gray-900 text-center mb-2">
@@ -416,10 +418,11 @@
               <div class="mt-4 flex justify-center">
                 <button
                   type="button"
-                  class="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-colors duration-300"
+                  :class="creativeAlertConfig.isError ? 'bg-red-100 text-red-900 hover:bg-red-200' : 'bg-blue-100 text-blue-900 hover:bg-blue-200'"
+                  class="inline-flex justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-colors duration-300"
                   @click="closeCreativeAlert"
                 >
-                  Got it, thanks!
+                  {{ creativeAlertConfig.isError ? 'Close' : 'Got it, thanks!' }}
                 </button>
               </div>
             </DialogPanel>
@@ -517,7 +520,8 @@ const deleteRecipe = (recipe) => {
           showCreativeAlert.value = true;
           creativeAlertConfig.value = {
             title: 'Recipe Deleted Successfully!',
-            message: `The recipe "${recipe.recipe_name}" has been deleted.`
+            message: `The recipe "${recipe.recipe_name}" has been deleted.`,
+            isError: false,
           };
         },
         onError: (error) => {
@@ -525,7 +529,8 @@ const deleteRecipe = (recipe) => {
           showCreativeAlert.value = true;
           creativeAlertConfig.value = {
             title: 'Error',
-            message: 'Failed to delete recipe. Please try again.'
+            message: 'Failed to delete recipe. Please try again.',
+            isError: true,
           };
         },
       });
@@ -547,6 +552,7 @@ const showCreativeAlert = ref(false);
 const creativeAlertConfig = ref({
   title: '',
   message: '',
+  isError: false,
 });
 
 const userForm = ref({
@@ -629,7 +635,8 @@ const deleteUser = (user) => {
           showCreativeAlert.value = true;
           creativeAlertConfig.value = {
             title: 'User Deleted Successfully!',
-            message: `${getRole(user.role_id)} "${user.name}" has been deleted.`
+            message: `${getRole(user.role_id)} "${user.name}" has been deleted.`,
+            isError: false,
           };
         },
         onError: (error) => {
@@ -637,7 +644,8 @@ const deleteUser = (user) => {
           showCreativeAlert.value = true;
           creativeAlertConfig.value = {
             title: 'Error',
-            message: "Unable to delete the user. Please try again."
+            message: "Unable to delete the user. Please try again.",
+            isError: true,
           };
         },
       });
@@ -647,11 +655,7 @@ const deleteUser = (user) => {
 
 const editUser = (user) => {
   if (getRole(user.role_id) === "Admin") {
-    showCreativeAlert.value = true;
-    creativeAlertConfig.value = {
-      title: 'Cannot Edit Admin',
-      message: "Admin roles cannot be edited or demoted."
-    };
+    console.error("Cannot edit Admin user");
     return;
   }
 
@@ -662,7 +666,6 @@ const editUser = (user) => {
     name: user.name,
     email: user.email,
     role_id: user.role_id,
-    password: ""
   };
 };
 
@@ -672,53 +675,45 @@ const submitUser = () => {
       getRole(editingUser.value.role_id) === "Admin" &&
       userForm.value.role_id !== editingUser.value.role_id
     ) {
-      showCreativeAlert.value = true;
-      creativeAlertConfig.value = {
-        title: 'Cannot Demote Admin',
-        message: "Once promoted to Admin, users cannot be demoted."
-      };
+      console.error("Cannot demote Admin user");
       return;
     }
+    
+    router.post(route("admin.updateRole", { id: userForm.value.id }), {
+      role_id: userForm.value.role_id,
+    }, {
+            preserveState: true,
+      preserveScroll: true,
+      onSuccess: (response) => {
+        console.log("User updated successfully:", response.data);
 
-    showConfirmModal.value = true;
-    confirmModalConfig.value = {
-      title: 'Update User Role',
-      message: `Are you sure you want to update ${editingUser.value.name}'s role to ${getRole(userForm.value.role_id)}?`,
-      onConfirm: () => {
-        router.put(route("admin.updateUserRole", { user: userForm.value.id }), {
-          role_id: userForm.value.role_id,
-        }, {
-          preserveState: true,
-          preserveScroll: true,
-          onSuccess: (response) => {
-            const updatedUser = response.data.user;
-            const userIndex = props.users.findIndex((u) => u.id === updatedUser.id);
-            if (userIndex > -1) {
-              props.users[userIndex] = updatedUser;
-            }
-            closeModal();
-            showCreativeAlert.value = true;
-            creativeAlertConfig.value = {
-              title: 'User Updated',
-              message: `${updatedUser.name} has been successfully updated to ${getRole(updatedUser.role_id)}.`
-            };
-            
-            // Check if a redirect URL is provided in the response
-            if (response.data.redirect) {
-              window.location.href = response.data.redirect;
-            }
-          },
-          onError: () => {
-            showCreativeAlert.value = true;
-            creativeAlertConfig.value = {
-              title: 'Error',
-              message: "There was an error updating the user. Please try again."
-            };
-          },
-        });
-      }
-    };
+        // Update the user in the local list after successful update
+        const updatedUser = response.data.user;
+        const userIndex = props.users.findIndex((u) => u.id === updatedUser.id);
+        if (userIndex > -1) {
+          props.users[userIndex] = updatedUser;
+        }
+
+        closeModal();
+        showCreativeAlert.value = true;
+        creativeAlertConfig.value = {
+          title: 'User Updated',
+          message: `${updatedUser.name} has been successfully updated to ${getRole(updatedUser.role_id)}.`,
+          isError: false,
+        };
+      },
+      onError: (errors) => {
+        console.error("Error updating user:", errors);
+        showCreativeAlert.value = true;
+        creativeAlertConfig.value = {
+          title: 'Error',
+          message: errors.message || "There was an error updating the user. Please try again.",
+          isError: true,
+        };
+      },
+    });
   } else {
+    // Handle user creation logic (unchanged)
     router.post(route("admin.addUser"), userForm.value, {
       preserveState: true,
       preserveScroll: true,
@@ -729,14 +724,16 @@ const submitUser = () => {
         showCreativeAlert.value = true;
         creativeAlertConfig.value = {
           title: 'User Added Successfully!',
-          message: `New user has been added.`
+          message: `New user has been added.`,
+          isError: false,
         };
       },
       onError: (errors) => {
         showCreativeAlert.value = true;
         creativeAlertConfig.value = {
           title: 'Error',
-          message: "There was an error adding the user: " + Object.values(errors).join(", ")
+          message: "There was an error adding the user: " + Object.values(errors).join(", "),
+          isError: true,
         };
       },
     });
@@ -758,7 +755,8 @@ const refreshActivityLogs = () => {
       showCreativeAlert.value = true;
       creativeAlertConfig.value = {
         title: 'Logs Refreshed',
-        message: "Activity logs have been successfully refreshed."
+        message: "Activity logs have been successfully refreshed.",
+        isError: false,
       };
     },
     onError: (error) => {
@@ -766,7 +764,8 @@ const refreshActivityLogs = () => {
       showCreativeAlert.value = true;
       creativeAlertConfig.value = {
         title: 'Error',
-        message: "Unable to refresh activity logs. Please try again."
+        message: "Unable to refresh activity logs. Please try again.",
+        isError: true,
       };
     },
   });
@@ -828,3 +827,4 @@ const closeCreativeAlert = () => {
   background-color: #4338CA;
 }
 </style>
+

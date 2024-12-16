@@ -28,13 +28,13 @@ Route::middleware(['auth', 'setDB'])->group(function () {
     Route::get('/user', [AdminController::class, 'users'])->name('user');
 
    // Admin routes 
-   Route::middleware('admin')->group(function () {
+   Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin', [AdminController::class, 'dashboard'])->name('admin');
     Route::delete('/admin/users/{user}', [AdminController::class, 'deleteUser'])->name('admin.deleteUser');
-    Route::put('/admin/users/{user}/update-role', [AdminController::class, 'updateUserRole'])->name('admin.updateUserRole');
-    Route::post('/admin', [AdminController::class, 'addUser'])->name('admin.addUser');
+    Route::post('/admin/users/{id}', [AdminController::class, 'updateRole'])->name('admin.updateRole');
+    Route::post('/admin/users', [AdminController::class, 'addUser'])->name('admin.addUser');
     Route::delete('/admin/recipes/{id}', [AdminController::class, 'deleteRecipe'])->name('admin.deleteRecipe');
-    Route::post('/admin/refresh-stats', [AdminController::class, 'refreshStatistics'])->name('admin.refreshStats'); // Refresh stats
+    Route::post('/admin/refresh-stats', [AdminController::class, 'refreshStatistics'])->name('admin.refreshStats');
 });
 
     // Chef routes
