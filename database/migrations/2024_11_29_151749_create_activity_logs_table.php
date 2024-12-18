@@ -16,9 +16,12 @@ return new class extends Migration
             $table->id(); // Auto-incrementing ID column
             $table->integer('user_id'); // ID of the user who performed the action
             $table->string('table_name'); // Name of the table affected
-            $table->string('action', 10); // Action performed (e.g., 'Create', 'Update')
-            $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP')); // Explicitly define created_at with default value
-            $table->string('role_user',10);
+            $table->string('action', 10); // Action performed (e.g., 'Insert', 'Update', 'Delete')
+            $table->string('affected_name'); // Name of the user/recipe affected
+            $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP')); // Timestamp of the action
+            $table->string('role_user', 20)->default(''); // Role of the user performing the action
+            $table->timestamp('updated_at')->nullable(); // Nullable for updates
+            $table->timestamp('deleted_at')->nullable(); // Nullable for soft deletes
         });
     }
 

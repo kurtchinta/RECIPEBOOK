@@ -26,21 +26,19 @@ Route::middleware(['auth', 'setDB'])->group(function () {
     })->name('dashboard');
 
     Route::get('/user', [AdminController::class, 'users'])->name('user');
-
-   // Admin routes 
-   Route::middleware(['auth', 'admin'])->group(function () {
-    Route::get('/admin', [AdminController::class, 'dashboard'])->name('admin');
-    Route::delete('/admin/users/{user}', [AdminController::class, 'deleteUser'])->name('admin.deleteUser');
-    Route::post('/admin/users/{id}', [AdminController::class, 'updateRole'])->name('admin.updateRole');
-    Route::post('/admin/users', [AdminController::class, 'addUser'])->name('admin.addUser');
-    Route::delete('/admin/recipes/{id}', [AdminController::class, 'deleteRecipe'])->name('admin.deleteRecipe');
-    Route::post('/admin/refresh-stats', [AdminController::class, 'refreshStatistics'])->name('admin.refreshStats');
-});
+        Route::middleware(['auth', 'admin'])->group(function () {
+        Route::get('/admin', [AdminController::class, 'dashboard'])->name('admin');
+        Route::delete('/admin/users/{user}', [AdminController::class, 'deleteUser'])->name('admin.deleteUser');
+        Route::post('/admin/users/{id}', [AdminController::class, 'updateRole'])->name('admin.updateRole');
+        Route::post('/admin/users', [AdminController::class, 'addUser'])->name('admin.addUser');
+        Route::delete('/admin/recipes/{id}', [AdminController::class, 'deleteRecipe'])->name('admin.deleteRecipe');
+        Route::post('/admin/refresh-stats', [AdminController::class, 'refreshStatistics'])->name('admin.refreshActivityLogs');
+        Route::get('/admin/activity-logs', [AdminController::class, 'getActivityLogs'])->name('admin.activityLogs');
+    });
 
     // Chef routes
     Route::middleware('chef')->group(function () {
-        Route::get('/chef', [ChefController::class, 'dashboard'])->name('chef');  // Chef profile info
-        Route::get('/chef/dashboard', [ChefController::class, 'dashboard'])->name('chef.dashboard');
+        Route::get('/chef', [ChefController::class, 'dashboard'])->name('chef');
         Route::get('/chef/dashboard/stats', [ChefController::class, 'getDashboardStats'])->name('chef.getDashboardStats');
         Route::post('/chef/recipes', [ChefController::class, 'storeRecipe'])->name('chef.storeRecipe');
         Route::post('/chef/recipes/{recipe}', [ChefController::class, 'updateRecipe'])->name('chef.updateRecipe');

@@ -32,7 +32,6 @@ class SetDBConnection
         DB::reconnect($connection);
 
         DB::statement("SET myapp.user_id = " . (int) $user->user_id);
-
         return $next($request);
     }
 }

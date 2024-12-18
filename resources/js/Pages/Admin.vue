@@ -189,46 +189,90 @@
           </section>
 
           <!-- Activity Logs -->
-          <section id="activity" class="mb-12">
-            <div class="flex justify-between items-center mb-6">
-              <h2 class="text-3xl font-bold text-gray-800">Activity Logs</h2>
-              <button @click="refreshActivityLogs" 
-                      class="bg-blue-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-blue-700 transition-colors duration-300 flex items-center shadow-lg">
-                <ArrowPathIcon class="h-5 w-5 mr-2" />
-                Refresh Logs
-              </button>
-            </div>
-            <div class="bg-white rounded-xl shadow-md overflow-hidden">
-              <div class="overflow-x-auto">
-                <table class="w-full">
-                  <thead>
-                    <tr class="bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      <th class="px-6 py-3">Activity</th>
-                      <th class="px-6 py-3">Date</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-gray-200">
-                    <tr v-for="log in activityLogs" :key="log.id" class="hover:bg-gray-50">
-                      <td class="px-6 py-4">
-                        <div class="flex items-center">
-                          <div class="flex-shrink-0">
-                            <component :is="getActivityIcon(log.action)" class="h-6 w-6 text-gray-500" />
-                          </div>
-                          <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-900">{{ log.action }} by {{ log.user.name }}</p>
-                            <p class="text-xs text-gray-500">{{ log.user.email }}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{ formatDate(log.created_at) }}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+<section id="activity" class="mb-12">
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-3xl font-bold text-gray-800">Activity Logs</h2>
+    <button @click="refreshActivityLogs" 
+            class="bg-blue-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-blue-700 transition-colors duration-300 flex items-center shadow-lg">
+      <ArrowPathIcon class="h-5 w-5 mr-2" />
+      Refresh Logs
+    </button>
+  </div>
+
+  <!-- Filtering Options -->
+  <div class="flex space-x-4 mb-6">
+    <div class="flex items-center space-x-2">
+      <label for="actorFilter" class="text-sm font-medium text-gray-700">Actor:</label>
+      <input type="text" id="actorFilter" v-model="filters.actor" class="px-3 py-2 border rounded-md text-sm" placeholder="Search by actor" />
+    </div>
+    
+    <div class="flex items-center space-x-2">
+      <label for="actionFilter" class="text-sm font-medium text-gray-700">Action:</label>
+      <input type="text" id="actionFilter" v-model="filters.action" class="px-3 py-2 border rounded-md text-sm" placeholder="Search by action" />
+    </div>
+
+    <div class="flex items-center space-x-2">
+      <label for="dateFilter" class="text-sm font-medium text-gray-700">Date:</label>
+      <input type="date" id="dateFilter" v-model="filters.date" class="px-3 py-2 border rounded-md text-sm" />
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-md overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr class="bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+            <th class="px-6 py-3">Actor</th>
+            <th class="px-6 py-3">Role</th>
+            <th class="px-6 py-3">Action</th>
+            <th class="px-6 py-3">Modified Item</th>
+            <th class="px-6 py-3">Table Name</th>
+            <th class="px-6 py-3">Created</th>
+            <th class="px-6 py-3">Updated</th>
+            <th class="px-6 py-3">Deleted</th>
+          </tr> 
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          <tr v-for="log in filteredLogs" :key="log.log_id" class="hover:bg-gray-50">
+            <td class="px-6 py-4">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <component :is="getActivityIcon(log.action)" class="h-6 w-6 text-gray-500" />
+                </div>
+                <div class="ml-4">
+                  <p class="text-sm font-medium text-gray-900" >{{ log.user_name }}</p>
+                </div>
               </div>
-            </div>
-          </section>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {{ log.role_user }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {{ log.action }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {{ log.affected_name }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {{ log.table_name }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {{ formatDate(log.created_at) }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {{ log.updated_at ? formatDate(log.updated_at) : 'N/A' }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {{ log.deleted_at ? formatDate(log.deleted_at) : 'N/A' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+
         </div>
       </main>
     </div>
@@ -480,11 +524,38 @@ const props = defineProps({
     type: Array,
     default: () => [], 
   },
-  activityLogs: {
+  logs: {
     type: Array,
     default: () => [],
   }
 });
+
+const filters = ref({
+  actor: '',
+  action: '',
+  date: '',
+});
+
+const filteredLogs = computed(() => {
+  return props.logs.filter(log => {
+    const actorMatch = log.user_name.toLowerCase().includes(filters.value.actor.toLowerCase());
+    const actionMatch = log.action.toLowerCase().includes(filters.value.action.toLowerCase());
+    const dateMatch = filters.value.date ? formatDate(log.created_at) === filters.value.date : true;
+
+    return actorMatch && actionMatch && dateMatch;
+  });
+});
+
+const getActivityIcon = (type) => {
+  switch (type) {
+    case 'user':
+      return UserIcon;
+    case 'recipe':
+      return BookOpenIcon;
+    default:
+      return ClockIcon;
+  }
+};
 
 const filteredChefs = computed(() => {
   const recentRecipesMap = props.recentRecipes.reduce((map, recipe) => {
@@ -747,11 +818,8 @@ const closeModal = () => {
 };
 
 const refreshActivityLogs = () => {
-  router.get(route("admin.getActivityLogs"), {}, {
-    preserveState: true,
-    preserveScroll: true,
-    onSuccess: (page) => {
-      activityLogs.value = page.props.activityLogs;
+  router.post(route("admin.refreshActivityLogs"), {}, {
+    onSuccess: () => {
       showCreativeAlert.value = true;
       creativeAlertConfig.value = {
         title: 'Logs Refreshed',
@@ -769,17 +837,6 @@ const refreshActivityLogs = () => {
       };
     },
   });
-};
-
-const getActivityIcon = (type) => {
-  switch (type) {
-    case 'user':
-      return UserIcon;
-    case 'recipe':
-      return BookOpenIcon;
-    default:
-      return ClockIcon;
-  }
 };
 
 const getCategoryClass = (category) => {

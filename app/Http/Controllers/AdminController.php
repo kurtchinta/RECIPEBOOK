@@ -12,14 +12,32 @@ class AdminController extends Controller
     /*-----------------------------------
      | Dashboard and Overview Functions |
      -----------------------------------*/
-    
     /**
      * Display the admin dashboard with recipe statistics and user-role data.
      */
-    public function dashboard()
+    public function dashboard(Request $request)
     {
+
+        // Fetch filter parameters
+    $action = $request->input('action');       // e.g., INSERT, UPDATE, DELETE
+    $tableName = $request->input('table_name'); // e.g., users, recipes, categories
+
+    // Base query for logs
+    $logsQuery = DB::table('activity_logs_summary');
+
+    // Apply filters dynamically
+    if ($action) {
+        $logsQuery->where('action', $action);
+    }
+    if ($tableName) {
+        $logsQuery->where('table_name', $tableName);
+    }
+
+    // Fetch the filtered logs
+    $logs = $logsQuery->orderBy('created_at', 'desc')->get();
     // Fetch data from the STATISTICS view
     $statistics = DB::select('SELECT * FROM STATISTICS');
+    // $logs = DB::select('SELECT * FROM activity_logs_summary');
     $recipes = DB::select('SELECT * FROM get_recipes()');
     $recentRecipes = DB::select('
         SELECT users.id AS user_id, get_recent_recipe(users.id::bigint) AS recent_recipe 
@@ -30,6 +48,7 @@ class AdminController extends Controller
     // Fetch user and role information
     $users = User::with('role')->get();
     $roles = DB::table('roles')->get();
+    
 
     // Pass all the combined data to the Admin view
     return Inertia::render('Admin', [
@@ -38,13 +57,16 @@ class AdminController extends Controller
         'roles' => $roles,
         'recipes' => $recipes,
         'recentRecipes' => $recentRecipes,
+        'logs' => $logs
     ]);
     }
 
 
     public function deleteRecipe($id)
     {
-        \Log::info("Deleting recipe with ID: $id"); // Log the ID
+        DB::statement("SET app.current_user_id = " . auth()->id());
+
+        \Log::info(message: "Deleting recipe with ID: $id"); // Log the ID
         
         $recipe = DB::table('recipes')->where('id', $id)->first();
         
@@ -79,6 +101,8 @@ class AdminController extends Controller
     
      public function updateRole(Request $request, $userId)
     {
+        DB::statement("SET app.current_user_id = " . auth()->id());
+
         $user = DB::table('users')->where('id', $userId)->first();
 
         if (!$user) {
@@ -108,6 +132,8 @@ class AdminController extends Controller
      public function deleteUser($id)
      {
          // Find the user by ID using DB facade
+         DB::statement("SET app.current_user_id = " . auth()->id());
+
          $user = DB::table('users')->where('id', $id)->first();
      
          // Check if user exists
@@ -131,6 +157,8 @@ class AdminController extends Controller
      */
     public function addUser(Request $request)
 {
+    DB::statement("SET app.current_user_id = " . auth()->id());
+
     // Validate the incoming request data, including the dynamic role_id
     $validated = $request->validate([
         'name' => 'required|string|max:255',
@@ -168,7 +196,7 @@ class AdminController extends Controller
      */
     public function refreshStatistics()
     {
-        DB::statement('REFRESH MATERIALIZED VIEW recipe_statistics');
+        DB::statement('REFRESH MATERIALIZED VIEW activity_logs_summary');
         
         return redirect()->back()->with('message', 'Statistics refreshed successfully');
     }

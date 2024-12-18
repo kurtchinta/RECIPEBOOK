@@ -505,7 +505,9 @@ const props = defineProps({
     default: () => []
   }
 });
-
+onMounted(() => {
+  console.log(props.recipes);  // Check if recipes are passed correctly
+});
 // Reactive data
 const recipes = ref(props.recipes);
 const categories = ref(props.categories);

@@ -15,6 +15,7 @@ class ChefController extends Controller
 {
     public function dashboard()
     {
+        $recipes = Recipe::where('user_id', Auth::id())->get();  // Add this line to fetch recipes
         $stats = DB::select('SELECT * FROM chef_stat');
 
         $users = User::with('role')->get();
@@ -24,23 +25,14 @@ class ChefController extends Controller
             'stats' => $stats,
             'users' => $users,
             'roles' => $roles,
-        ]);
-    }
-
-    public function display_info()
-    {
-        $users = User::with('role')->get();
-        $roles = DB::table('roles')->get();
-
-        return Inertia::render('Chef', [
-            'users' => $users,
-            'roles' => $roles,
+            'recipes' => $recipes,
         ]);
     }
 
     public function storeRecipe(Request $request)
 {
-    try {
+    DB::statement("SET app.current_user_id = " . auth()->id());
+
         // Validate the request data
         $validated = $request->validate([
             'recipe_name' => 'required|string|max:255',
@@ -78,34 +70,36 @@ class ChefController extends Controller
             'created_at' => now(),
             'updated_at' => now(),
         ]);
-
-        return redirect()->route('chef.dashboard')->with('success', 'Recipe added successfully!');
-    } catch (\Illuminate\Validation\ValidationException $e) {
-        return redirect()->route('chef.dashboard')
-            ->withErrors($e->errors())
-            ->withInput();
-    } catch (\Exception $e) {
-        \Log::error('Failed to store recipe: ' . $e->getMessage());
-        return redirect()->route('chef.dashboard')->with('error', 'Failed to add the recipe. Please try again.');
-    }
+        
+        return back()->with('message', 'Recipe added successfully');
+        // return redirect()->route('chef')->with('success', 'Recipe added successfully!');
+    // } catch (\Illuminate\Validation\ValidationException $e) {
+    //     return redirect()->route('chef')
+    //         ->withErrors($e->errors())
+    //         ->withInput();
+    // } catch (\Exception $e) {
+    //     \Log::error('Failed to store recipe: ' . $e->getMessage());
+    //     return redirect()->route('chef')->with('error', 'Failed to add the recipe. Please try again.');
+    // }
 }
     
 public function updateRecipe(Request $request, $id)
 {
+    DB::statement("SET app.current_user_id = " . auth()->id());
+
     // Find the recipe by ID using DB
     $recipe = DB::table('recipes')->where('id', $id)->first();
 
     // Check if the recipe exists
     if (!$recipe) {
-        return redirect()->route('chef.dashboard')->with('error', 'Recipe not found.');
+        return redirect()->route('chef')->with('error', 'Recipe not found.');
     }
 
     // Check if the user is authorized to update the recipe
     if ($recipe->user_id !== Auth::id()) {
-        return redirect()->route('chef.dashboard')->with('error', 'You are not authorized to edit this recipe.');
+        return redirect()->route('chef')->with('error', 'You are not authorized to edit this recipe.');
     }
 
-    try {
         // Validate the request data
         $validated = $request->validate([
             'recipe_name' => 'required|string|max:255',
@@ -139,15 +133,17 @@ public function updateRecipe(Request $request, $id)
             'updated_at' => now(),
         ]);
 
-        return redirect()->route('chef.dashboard')->with('success', 'Recipe updated successfully!');
-    } catch (\Illuminate\Validation\ValidationException $e) {
-        return redirect()->route('chef.dashboard')
-            ->withErrors($e->errors())
-            ->withInput();
-    } catch (\Exception $e) {
-        \Log::error('Failed to update recipe: ' . $e->getMessage());
-        return redirect()->route('chef.dashboard')->with('error', 'Failed to update the recipe. Please try again.');
-    }
+        return back()->with('message', 'Recipe updated successfully!');
+
+    //     return redirect()->route('chef')->with('success', 'Recipe updated successfully!');
+    // } catch (\Illuminate\Validation\ValidationException $e) {
+    //     return redirect()->route('chef')
+    //         ->withErrors($e->errors())
+    //         ->withInput();
+    // } catch (\Exception $e) {
+    //     \Log::error('Failed to update recipe: ' . $e->getMessage());
+    //     return redirect()->route('chef')->with('error', 'Failed to update the recipe. Please try again.');
+    // }
 }
 
     public function editRecipe($id)
@@ -162,30 +158,27 @@ public function updateRecipe(Request $request, $id)
     }
 
     public function deleteRecipe($id)
-{
-    // Find the recipe by ID using DB
-    $recipe = DB::table('recipes')->where('id', $id)->first();
+    {
+        DB::statement("SET app.current_user_id = " . auth()->id());
 
-    // Check if the recipe exists
-    if (!$recipe) {
-        return redirect()->route('chef.dashboard')->with('error', 'Recipe not found.');
-    }
+        // Find the recipe by ID using DB
+        $recipe = DB::table('recipes')->where('id', $id)->first();
 
-    // Check if the user is authorized to delete the recipe
-    if ($recipe->user_id !== Auth::id()) {
-        return redirect()->route('chef.dashboard')->with('error', 'You are not authorized to delete this recipe.');
-    }
+        // Check if the recipe exists
+        if (!$recipe) {
+            return redirect()->route('chef')->with('error', 'Recipe not found.');
+        }
 
-    try {
-        // Delete the recipe using DB
-        DB::table('recipes')->where('id', $id)->delete();
+        // Check if the user is authorized to delete the recipe
+        if ($recipe->user_id !== Auth::id()) {
+            return redirect()->route('chef')->with('error', 'You are not authorized to delete this recipe.');
+        }
 
-        return redirect()->route('chef.dashboard')->with('success', 'Recipe deleted successfully!');
-    } catch (\Exception $e) {
-        \Log::error('Failed to delete recipe: ' . $e->getMessage());
-        return redirect()->route('chef.dashboard')->with('error', 'Failed to delete the recipe. Please try again.');
-    }
-}
+            // Delete the recipe using DB
+            DB::table('recipes')->where('id', $id)->delete();
+            
+            return redirect()->back()->with('message', 'Recipe deleted successfully.');
+        } 
 
     public function getDashboardStats()
     {
